@@ -1,0 +1,1404 @@
+{
+  "seed": 20260913,
+  "config": {
+    "ANALYSIS_MAX_ABS_CORR": 0.85,
+    "ANALYSIS_MAX_FEATURES": 3,
+    "CHANNELS": {
+      "R": 0,
+      "G": 1,
+      "B": 2
+    },
+    "COMBINATIONS": [
+      "R",
+      "G",
+      "B",
+      "RG",
+      "RB",
+      "GB",
+      "RGB"
+    ],
+    "EDA_PIXELS_PER_REGION": 3000,
+    "FEATURES": [
+      "R",
+      "G",
+      "B",
+      "H",
+      "S",
+      "V",
+      "a*",
+      "b*"
+    ],
+    "KMEANS_PARAMS": {
+      "n_clusters": 2,
+      "init": "k-means++",
+      "n_init": 10,
+      "max_iter": 300,
+      "tol": 0.0001
+    },
+    "MAX_SIDE": 256,
+    "MIN_COMPONENT_FRACTION": 0.01,
+    "MORPH_KERNEL": 5,
+    "N_BOOTSTRAP": 2000,
+    "N_REPEATED_SPLITS": 30,
+    "PCA_VARIANCE_TARGET": 0.95,
+    "PIXEL_SAMPLE": 12000,
+    "SEED": 20260913,
+    "SFS_FOLDS": 5,
+    "SFS_REPEATS": 10,
+    "SFS_TOLERANCE": 0.001,
+    "SPLIT_FRACTIONS": [
+      0.6,
+      0.2,
+      0.2
+    ]
+  },
+  "data_root": "data",
+  "n_images_raw": 62,
+  "n_images": 60,
+  "duplicates": [
+    {
+      "removed": "unriped_tomato_48.jpeg",
+      "kept": "unriped_tomato_4.jpeg",
+      "class": "unripe"
+    },
+    {
+      "removed": "unriped_tomato_7.jpeg",
+      "kept": "unriped_tomato_61.jpeg",
+      "class": "unripe"
+    }
+  ],
+  "class_counts": {
+    "ripe": 31,
+    "unripe": 29
+  },
+  "split_counts": {
+    "ripe": {
+      "train": 19,
+      "validation": 6,
+      "test": 6
+    },
+    "unripe": {
+      "train": 17,
+      "validation": 6,
+      "test": 6
+    }
+  },
+  "dataset_dimensions": {
+    "height": [
+      200,
+      5200
+    ],
+    "width": [
+      250,
+      7792
+    ],
+    "channels": {
+      "3": 58,
+      "4": 2
+    }
+  },
+  "reference_area_by_class": {
+    "ripe": 0.39855041828933085,
+    "unripe": 0.31403941938548036
+  },
+  "pixel_summary": [
+    {
+      "class": "ripe",
+      "region": "fondo",
+      "R": 156.5103759765625,
+      "R_std": 83.99412536621094,
+      "G": 151.37855529785156,
+      "G_std": 81.66387939453125,
+      "B": 126.3463363647461,
+      "B_std": 92.59696960449219,
+      "H": 39.9314079284668,
+      "H_std": 73.62063598632812,
+      "S": 0.3606013357639313,
+      "S_std": 0.34263351559638977,
+      "V": 0.6603752970695496,
+      "V_std": 0.29693856835365295,
+      "a*": -1.1753650903701782,
+      "a*_std": 19.19312286376953,
+      "b*": 14.768150329589844,
+      "b*_std": 19.162864685058594
+    },
+    {
+      "class": "ripe",
+      "region": "fruto",
+      "R": 194.10081481933594,
+      "R_std": 50.027313232421875,
+      "G": 75.2912368774414,
+      "G_std": 58.49237823486328,
+      "B": 45.359012603759766,
+      "B_std": 50.301353454589844,
+      "H": 12.57262134552002,
+      "H_std": 20.297048568725586,
+      "S": 0.7899529933929443,
+      "S_std": 0.21414563059806824,
+      "V": 0.7631522417068481,
+      "V_std": 0.19281718134880066,
+      "a*": 42.9075813293457,
+      "a*_std": 21.411489486694336,
+      "b*": 42.400611877441406,
+      "b*_std": 15.981441497802734
+    },
+    {
+      "class": "unripe",
+      "region": "fondo",
+      "R": 177.79383850097656,
+      "R_std": 85.3052978515625,
+      "G": 179.2527313232422,
+      "G_std": 81.55126190185547,
+      "B": 162.24681091308594,
+      "B_std": 95.93360137939453,
+      "H": 29.455110549926758,
+      "H_std": 57.84635925292969,
+      "S": 0.21734043955802917,
+      "S_std": 0.27900663018226624,
+      "V": 0.7240483164787292,
+      "V_std": 0.3059804141521454,
+      "a*": -3.105771780014038,
+      "a*_std": 10.05260181427002,
+      "b*": 9.184269905090332,
+      "b*_std": 13.538244247436523
+    },
+    {
+      "class": "unripe",
+      "region": "fruto",
+      "R": 144.7073974609375,
+      "R_std": 47.29597854614258,
+      "G": 171.3912353515625,
+      "G_std": 45.09566116333008,
+      "B": 74.3306884765625,
+      "B_std": 48.68766403198242,
+      "H": 78.65283203125,
+      "H_std": 20.959577560424805,
+      "S": 0.593303382396698,
+      "S_std": 0.21616803109645844,
+      "V": 0.6729292273521423,
+      "V_std": 0.175806924700737,
+      "a*": -23.17714500427246,
+      "a*_std": 8.542651176452637,
+      "b*": 44.36808776855469,
+      "b*_std": 16.390138626098633
+    }
+  ],
+  "segmentation_summary": [
+    {
+      "combination": "R",
+      "train_mean": 0.5546734322110318,
+      "val_mean": 0.4468339180128415,
+      "dev_mean": 0.5277135536614842,
+      "dev_std": 0.2475304183699939,
+      "dev_median": 0.5136166125115875,
+      "dev_post_mean": 0.5709285903465003,
+      "dev_oracle_mean": 0.5412424109051869,
+      "dev_heuristic": 0.5277135536614842,
+      "dev_min_border": 0.4972057405795931,
+      "dev_max_saturation": 0.4156261030079824,
+      "dev_frac_below_03": 0.20833333333333334,
+      "test_mean": 0.4687818101851333,
+      "test_std": 0.22811904472566838,
+      "test_post_mean": 0.47480365569686717,
+      "iter_mean": 5.616666666666666,
+      "iter_max": 11
+    },
+    {
+      "combination": "G",
+      "train_mean": 0.5079563949255441,
+      "val_mean": 0.5181763145306335,
+      "dev_mean": 0.5105113748268164,
+      "dev_std": 0.26314453568367885,
+      "dev_median": 0.5472020955284851,
+      "dev_post_mean": 0.5356611536428872,
+      "dev_oracle_mean": 0.5437983870726661,
+      "dev_heuristic": 0.5105113748268164,
+      "dev_min_border": 0.4732260261413536,
+      "dev_max_saturation": 0.47805484352696476,
+      "dev_frac_below_03": 0.2708333333333333,
+      "test_mean": 0.40224520419755105,
+      "test_std": 0.263678303147088,
+      "test_post_mean": 0.40179490440866655,
+      "iter_mean": 4.85,
+      "iter_max": 11
+    },
+    {
+      "combination": "B",
+      "train_mean": 0.5594830239100594,
+      "val_mean": 0.49194738006821037,
+      "dev_mean": 0.5425991129495972,
+      "dev_std": 0.3036748589547653,
+      "dev_median": 0.5250095716488455,
+      "dev_post_mean": 0.5822729168260278,
+      "dev_oracle_mean": 0.5589566325416627,
+      "dev_heuristic": 0.5425991129495972,
+      "dev_min_border": 0.4723291542525394,
+      "dev_max_saturation": 0.5453893944138424,
+      "dev_frac_below_03": 0.2708333333333333,
+      "test_mean": 0.39184854653774653,
+      "test_std": 0.2880137956183534,
+      "test_post_mean": 0.4055711825896629,
+      "iter_mean": 5.25,
+      "iter_max": 13
+    },
+    {
+      "combination": "RG",
+      "train_mean": 0.5652607821171853,
+      "val_mean": 0.5323020359291574,
+      "dev_mean": 0.5570210955701783,
+      "dev_std": 0.25802315990535374,
+      "dev_median": 0.5885886429652502,
+      "dev_post_mean": 0.5928836737840112,
+      "dev_oracle_mean": 0.5748249542598557,
+      "dev_heuristic": 0.5570210955701783,
+      "dev_min_border": 0.5498076002305767,
+      "dev_max_saturation": 0.47671422896106147,
+      "dev_frac_below_03": 0.16666666666666666,
+      "test_mean": 0.47156803998360236,
+      "test_std": 0.2538700309591445,
+      "test_post_mean": 0.47262626756015913,
+      "iter_mean": 6.0,
+      "iter_max": 17
+    },
+    {
+      "combination": "RB",
+      "train_mean": 0.5854028369075687,
+      "val_mean": 0.5146291412750907,
+      "dev_mean": 0.5677094129994491,
+      "dev_std": 0.2783707283399979,
+      "dev_median": 0.5847668006816162,
+      "dev_post_mean": 0.6061131207038143,
+      "dev_oracle_mean": 0.5778165761935843,
+      "dev_heuristic": 0.5677094129994491,
+      "dev_min_border": 0.5517015926509622,
+      "dev_max_saturation": 0.494360266916887,
+      "dev_frac_below_03": 0.1875,
+      "test_mean": 0.4588599819076988,
+      "test_std": 0.29083161735695834,
+      "test_post_mean": 0.4567751661895842,
+      "iter_mean": 5.933333333333334,
+      "iter_max": 47
+    },
+    {
+      "combination": "GB",
+      "train_mean": 0.5440492904219982,
+      "val_mean": 0.5183895406118507,
+      "dev_mean": 0.5376343529694613,
+      "dev_std": 0.3007775974787124,
+      "dev_median": 0.4876075113237555,
+      "dev_post_mean": 0.5770807524771046,
+      "dev_oracle_mean": 0.5645386003138322,
+      "dev_heuristic": 0.5376343529694613,
+      "dev_min_border": 0.49613881697669254,
+      "dev_max_saturation": 0.5164760796839003,
+      "dev_frac_below_03": 0.25,
+      "test_mean": 0.3760746828802861,
+      "test_std": 0.2941891354926245,
+      "test_post_mean": 0.379045798147761,
+      "iter_mean": 5.25,
+      "iter_max": 14
+    },
+    {
+      "combination": "RGB",
+      "train_mean": 0.5614856774711421,
+      "val_mean": 0.5254376629781222,
+      "dev_mean": 0.5524736738478871,
+      "dev_std": 0.28440939641533675,
+      "dev_median": 0.5409662538745917,
+      "dev_post_mean": 0.5889088103234251,
+      "dev_oracle_mean": 0.5744395727685934,
+      "dev_heuristic": 0.5524736738478871,
+      "dev_min_border": 0.5346582905146945,
+      "dev_max_saturation": 0.4990321721621928,
+      "dev_frac_below_03": 0.20833333333333334,
+      "test_mean": 0.4434566180717729,
+      "test_std": 0.26571882210321374,
+      "test_post_mean": 0.44687992814017763,
+      "iter_mean": 5.85,
+      "iter_max": 24
+    }
+  ],
+  "best_segmentation": "RB",
+  "use_postprocessing": true,
+  "separability": [
+    {
+      "feature": "R",
+      "mean_ripe": 187.1962934795179,
+      "std_ripe": 30.164489509137304,
+      "mean_unripe": 144.03421559053308,
+      "std_unripe": 20.442144805493708,
+      "cohen_d": 1.6571898465965096,
+      "auc_univariate": 0.894736842105263,
+      "direction": "mayor en maduro"
+    },
+    {
+      "feature": "G",
+      "mean_ripe": 102.34175250404759,
+      "std_ripe": 46.24166745326098,
+      "mean_unripe": 167.90068682502297,
+      "std_unripe": 24.92465919255317,
+      "cohen_d": -1.737073824213793,
+      "auc_univariate": 0.8823529411764706,
+      "direction": "mayor en inmaduro"
+    },
+    {
+      "feature": "B",
+      "mean_ripe": 69.40967007687217,
+      "std_ripe": 41.19086267904298,
+      "mean_unripe": 81.16729287540211,
+      "std_unripe": 26.84436922079335,
+      "cohen_d": -0.33424984984973594,
+      "auc_univariate": 0.6346749226006192,
+      "direction": "mayor en inmaduro"
+    },
+    {
+      "feature": "H",
+      "mean_ripe": 19.099875864229706,
+      "std_ripe": 16.213216571415142,
+      "mean_unripe": 79.83464723474839,
+      "std_unripe": 13.29532604884331,
+      "cohen_d": -4.073046294924938,
+      "auc_univariate": 0.9814241486068112,
+      "direction": "mayor en inmaduro"
+    },
+    {
+      "feature": "S",
+      "mean_ripe": 0.6498872245612898,
+      "std_ripe": 0.17880452303361474,
+      "mean_unripe": 0.5447984705953037,
+      "std_unripe": 0.13466210272310666,
+      "cohen_d": 0.6586152355640128,
+      "auc_univariate": 0.6965944272445821,
+      "direction": "mayor en maduro"
+    },
+    {
+      "feature": "V",
+      "mean_ripe": 0.750718289300015,
+      "std_ripe": 0.11576170386779656,
+      "mean_unripe": 0.6669017988092759,
+      "std_unripe": 0.08835911466702716,
+      "cohen_d": 0.8077008592802304,
+      "auc_univariate": 0.7554179566563467,
+      "direction": "mayor en maduro"
+    },
+    {
+      "feature": "a*",
+      "mean_ripe": 29.076848456734105,
+      "std_ripe": 19.434428430817807,
+      "mean_unripe": -20.702481550328873,
+      "std_unripe": 7.516165134773955,
+      "cohen_d": 3.3073078864658076,
+      "auc_univariate": 0.956656346749226,
+      "direction": "mayor en maduro"
+    },
+    {
+      "feature": "b*",
+      "mean_ripe": 35.561881717882656,
+      "std_ripe": 12.27988199553128,
+      "mean_unripe": 40.01018411972944,
+      "std_unripe": 10.880784294626492,
+      "cohen_d": -0.38207628177193553,
+      "auc_univariate": 0.6253869969040248,
+      "direction": "mayor en inmaduro"
+    }
+  ],
+  "analysis_features": [
+    "H",
+    "G",
+    "R"
+  ],
+  "sfs_features": [
+    "H",
+    "B",
+    "S",
+    "R"
+  ],
+  "sfs_trace": [
+    {
+      "step": 1,
+      "added": "H",
+      "subset": "H",
+      "cv_auc": 0.9808333333333333,
+      "cv_auc_std": 0.04747806511081371,
+      "selected": false
+    },
+    {
+      "step": 2,
+      "added": "B",
+      "subset": "H,B",
+      "cv_auc": 0.9866666666666667,
+      "cv_auc_std": 0.03969501787938184,
+      "selected": false
+    },
+    {
+      "step": 3,
+      "added": "S",
+      "subset": "H,B,S",
+      "cv_auc": 0.9866666666666667,
+      "cv_auc_std": 0.03969501787938184,
+      "selected": false
+    },
+    {
+      "step": 4,
+      "added": "R",
+      "subset": "H,B,S,R",
+      "cv_auc": 0.9879166666666667,
+      "cv_auc_std": 0.035377429245212255,
+      "selected": true
+    },
+    {
+      "step": 5,
+      "added": "V",
+      "subset": "H,B,S,R,V",
+      "cv_auc": 0.9879166666666667,
+      "cv_auc_std": 0.035377429245212255,
+      "selected": false
+    },
+    {
+      "step": 6,
+      "added": "G",
+      "subset": "H,B,S,R,V,G",
+      "cv_auc": 0.985,
+      "cv_auc_std": 0.040833333333333326,
+      "selected": false
+    },
+    {
+      "step": 7,
+      "added": "a*",
+      "subset": "H,B,S,R,V,G,a*",
+      "cv_auc": 0.98375,
+      "cv_auc_std": 0.04130888053568034,
+      "selected": false
+    },
+    {
+      "step": 8,
+      "added": "b*",
+      "subset": "H,B,S,R,V,G,a*,b*",
+      "cv_auc": 0.98125,
+      "cv_auc_std": 0.04569106708221105,
+      "selected": false
+    }
+  ],
+  "pca": {
+    "eigenvalues": [
+      3.7290473134959883,
+      2.77792949658267,
+      1.5452057766851106,
+      0.12060991377731915,
+      0.03839706961178846,
+      0.012605518384447487,
+      0.004246580796037407,
+      0.000529759238061612
+    ],
+    "ratio": [
+      0.4531828332373599,
+      0.337595598543033,
+      0.18778542424992672,
+      0.014657454799326989,
+      0.004666310543099295,
+      0.0015319206369988274,
+      0.0005160775272962129,
+      6.438046295887649e-05
+    ],
+    "cumulative": [
+      0.4531828332373599,
+      0.790778431780393,
+      0.9785638560303197,
+      0.9932213108296467,
+      0.997887621372746,
+      0.9994195420097448,
+      0.999935619537041,
+      0.9999999999999999
+    ],
+    "n_components": 3
+  },
+  "pca_loadings": [
+    {
+      "index": "PC1",
+      "R": 0.2480733640407952,
+      "G": -0.47017675895968936,
+      "B": -0.3308846160120388,
+      "H": -0.45338975738100684,
+      "S": 0.395364195187785,
+      "V": 0.0930078768227266,
+      "a*": 0.4772790367871731,
+      "b*": 0.09791797195690846
+    },
+    {
+      "index": "PC2",
+      "R": 0.47733293679924177,
+      "G": 0.0751540666406233,
+      "B": 0.4691418356017623,
+      "H": -0.22332034685191737,
+      "S": -0.35218016908296734,
+      "V": 0.4508617084096494,
+      "a*": 0.2148802152454926,
+      "b*": -0.35079685855892534
+    },
+    {
+      "index": "PC3",
+      "R": 0.313857455200064,
+      "G": 0.3276872410836599,
+      "B": -0.05753114515665587,
+      "H": 0.1652433651031137,
+      "S": 0.2385218572534847,
+      "V": 0.516418809422597,
+      "a*": -0.15381796789472807,
+      "b*": 0.645180856126647
+    },
+    {
+      "index": "PC4",
+      "R": 0.025089812894651304,
+      "G": -0.4127976796812317,
+      "B": 0.006071090158541778,
+      "H": 0.815620286263287,
+      "S": 0.02076477389211956,
+      "V": 0.21414341002757167,
+      "a*": 0.32352995924318306,
+      "b*": -0.11284970987051451
+    },
+    {
+      "index": "PC5",
+      "R": -0.557259159454817,
+      "G": -0.03428783613460157,
+      "B": 0.13202653659828661,
+      "H": -0.13323560999784917,
+      "S": 0.4364589138949989,
+      "V": 0.5679291141842139,
+      "a*": -0.18460213150965038,
+      "b*": -0.325554957180667
+    },
+    {
+      "index": "PC6",
+      "R": 0.3800766771443622,
+      "G": 0.2826573239315245,
+      "B": 0.24945710928242767,
+      "H": 0.16431656133095876,
+      "S": 0.6783541385824731,
+      "V": -0.3443400797911056,
+      "a*": -0.017667466641581087,
+      "b*": -0.32767546102744455
+    },
+    {
+      "index": "PC7",
+      "R": -0.08344376911446295,
+      "G": -0.45472233574432874,
+      "B": 0.7351147660289128,
+      "H": -0.08493365178700346,
+      "S": 0.10402206655762525,
+      "V": -0.17154268773530434,
+      "a*": -0.11657138944994758,
+      "b*": 0.42990803370827274
+    },
+    {
+      "index": "PC8",
+      "R": -0.3866755211995306,
+      "G": 0.4556990324530078,
+      "B": 0.216843360988061,
+      "H": -0.007651418438282237,
+      "S": 0.029173931248189913,
+      "V": -0.07061872946399173,
+      "a*": 0.7414314784190585,
+      "b*": 0.20045469640668126
+    }
+  ],
+  "pca_validation_by_p": [
+    {
+      "p": 1,
+      "cumulative": 0.4531828332373599,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 2,
+      "cumulative": 0.790778431780393,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 3,
+      "cumulative": 0.9785638560303197,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 4,
+      "cumulative": 0.9932213108296467,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 5,
+      "cumulative": 0.997887621372746,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 6,
+      "cumulative": 0.9994195420097448,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 7,
+      "cumulative": 0.999935619537041,
+      "val_auc": 1.0,
+      "val_accuracy": 1.0
+    },
+    {
+      "p": 8,
+      "cumulative": 0.9999999999999999,
+      "val_auc": 0.9722222222222223,
+      "val_accuracy": 0.9166666666666666
+    }
+  ],
+  "strategies": [
+    {
+      "name": "Bayes + análisis",
+      "features": [
+        "H",
+        "G",
+        "R"
+      ],
+      "threshold": 7.3768700456360445,
+      "youden": 1.0,
+      "n_tied_thresholds": 1,
+      "val_metrics": {
+        "threshold": 7.3768700456360445,
+        "auc": 1.0,
+        "accuracy": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": 1.0,
+        "f1": 1.0,
+        "tn": 6,
+        "fp": 0,
+        "fn": 0,
+        "tp": 6
+      },
+      "test_metrics": {
+        "threshold": 7.3768700456360445,
+        "auc": 1.0,
+        "accuracy": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": 1.0,
+        "f1": 1.0,
+        "tn": 6,
+        "fp": 0,
+        "fn": 0,
+        "tp": 6
+      },
+      "test_ci": {
+        "auc": [
+          0.9999999999999999,
+          1.0
+        ],
+        "accuracy": [
+          1.0,
+          1.0
+        ],
+        "sensitivity": [
+          1.0,
+          1.0
+        ],
+        "specificity": [
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "name": "Bayes + SFS",
+      "features": [
+        "H",
+        "B",
+        "S",
+        "R"
+      ],
+      "threshold": 7.2102034250961875,
+      "youden": 1.0,
+      "n_tied_thresholds": 1,
+      "val_metrics": {
+        "threshold": 7.2102034250961875,
+        "auc": 1.0,
+        "accuracy": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": 1.0,
+        "f1": 1.0,
+        "tn": 6,
+        "fp": 0,
+        "fn": 0,
+        "tp": 6
+      },
+      "test_metrics": {
+        "threshold": 7.2102034250961875,
+        "auc": 1.0,
+        "accuracy": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": 1.0,
+        "f1": 1.0,
+        "tn": 6,
+        "fp": 0,
+        "fn": 0,
+        "tp": 6
+      },
+      "test_ci": {
+        "auc": [
+          0.9999999999999999,
+          1.0
+        ],
+        "accuracy": [
+          1.0,
+          1.0
+        ],
+        "sensitivity": [
+          1.0,
+          1.0
+        ],
+        "specificity": [
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "name": "PCA + Bayes",
+      "features": [
+        "PC1",
+        "PC2",
+        "PC3"
+      ],
+      "threshold": 1.7681527814215658,
+      "youden": 1.0,
+      "n_tied_thresholds": 1,
+      "val_metrics": {
+        "threshold": 1.7681527814215658,
+        "auc": 1.0,
+        "accuracy": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": 1.0,
+        "f1": 1.0,
+        "tn": 6,
+        "fp": 0,
+        "fn": 0,
+        "tp": 6
+      },
+      "test_metrics": {
+        "threshold": 1.7681527814215658,
+        "auc": 1.0,
+        "accuracy": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": 1.0,
+        "f1": 1.0,
+        "tn": 6,
+        "fp": 0,
+        "fn": 0,
+        "tp": 6
+      },
+      "test_ci": {
+        "auc": [
+          0.9999999999999999,
+          1.0
+        ],
+        "accuracy": [
+          1.0,
+          1.0
+        ],
+        "sensitivity": [
+          1.0,
+          1.0
+        ],
+        "specificity": [
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "mask_effect_test": [
+    {
+      "mask_source": "reference",
+      "name": "Bayes + análisis",
+      "features": "a*,R,S",
+      "threshold": 10.68836242211923,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "reference",
+      "name": "Bayes + SFS",
+      "features": "H",
+      "threshold": 1.1764775487897072,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "reference",
+      "name": "PCA + Bayes",
+      "features": "PC1,PC2,PC3",
+      "threshold": 2.7093679357272595,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans_raw",
+      "name": "Bayes + análisis",
+      "features": "H,R,G",
+      "threshold": 6.305886182536045,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans_raw",
+      "name": "Bayes + SFS",
+      "features": "H,S,V,B",
+      "threshold": 3.698381363396409,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans_raw",
+      "name": "PCA + Bayes",
+      "features": "PC1,PC2,PC3",
+      "threshold": 1.7331637174420202,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans",
+      "name": "Bayes + análisis",
+      "features": "H,G,R",
+      "threshold": 7.3768700456360445,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans",
+      "name": "Bayes + SFS",
+      "features": "H,B,S,R",
+      "threshold": 7.2102034250961875,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans",
+      "name": "PCA + Bayes",
+      "features": "PC1,PC2,PC3",
+      "threshold": 1.7681527814215658,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans_linear_hue",
+      "name": "Bayes + análisis",
+      "features": "a*,R,H",
+      "threshold": 10.722592628641783,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans_linear_hue",
+      "name": "Bayes + SFS",
+      "features": "a*,S,V,B",
+      "threshold": 7.093233791383568,
+      "auc": 1.0,
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "tn": 6,
+      "fp": 0,
+      "fn": 0,
+      "tp": 6
+    },
+    {
+      "mask_source": "kmeans_linear_hue",
+      "name": "PCA + Bayes",
+      "features": "PC1,PC2,PC3,PC4",
+      "threshold": 1.4492260038959004,
+      "auc": 1.0,
+      "accuracy": 0.9166666666666666,
+      "sensitivity": 1.0,
+      "specificity": 0.8333333333333334,
+      "balanced_accuracy": 0.9166666666666667,
+      "precision": 0.8571428571428571,
+      "f1": 0.923076923076923,
+      "tn": 5,
+      "fp": 1,
+      "fn": 0,
+      "tp": 6
+    }
+  ],
+  "repeated_splits_summary": [
+    {
+      "strategy": "Bayes + análisis",
+      "mask_source": "kmeans",
+      "auc_mean": 0.987037037037037,
+      "auc_std": 0.03700509478267991,
+      "accuracy_mean": 0.9722222222222222,
+      "accuracy_std": 0.039955275123782025,
+      "sensitivity_mean": 0.961111111111111,
+      "sensitivity_std": 0.07169717785867938,
+      "specificity_mean": 0.9833333333333333,
+      "specificity_std": 0.050854762771560785
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "mask_source": "kmeans",
+      "auc_mean": 0.9925925925925926,
+      "auc_std": 0.02054666543455739,
+      "accuracy_mean": 0.9777777777777777,
+      "accuracy_std": 0.037481370425733636,
+      "sensitivity_mean": 0.9666666666666667,
+      "sensitivity_std": 0.067806350362081,
+      "specificity_mean": 0.9888888888888889,
+      "specificity_std": 0.042284688617077064
+    },
+    {
+      "strategy": "PCA + Bayes",
+      "mask_source": "kmeans",
+      "auc_mean": 0.9796296296296296,
+      "auc_std": 0.04609791468216925,
+      "accuracy_mean": 0.95,
+      "accuracy_std": 0.07453559924999299,
+      "sensitivity_mean": 0.9222222222222223,
+      "sensitivity_std": 0.12934652537689348,
+      "specificity_mean": 0.9777777777777777,
+      "specificity_std": 0.09522441062056096
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "mask_source": "reference",
+      "auc_mean": 1.0,
+      "auc_std": 0.0,
+      "accuracy_mean": 1.0,
+      "accuracy_std": 0.0,
+      "sensitivity_mean": 1.0,
+      "sensitivity_std": 0.0,
+      "specificity_mean": 1.0,
+      "specificity_std": 0.0
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "mask_source": "reference",
+      "auc_mean": 1.0,
+      "auc_std": 0.0,
+      "accuracy_mean": 0.9666666666666667,
+      "accuracy_std": 0.056222055638600436,
+      "sensitivity_mean": 0.9666666666666667,
+      "sensitivity_std": 0.08070569968525038,
+      "specificity_mean": 0.9666666666666667,
+      "specificity_std": 0.09181023240329132
+    },
+    {
+      "strategy": "PCA + Bayes",
+      "mask_source": "reference",
+      "auc_mean": 1.0,
+      "auc_std": 0.0,
+      "accuracy_mean": 1.0,
+      "accuracy_std": 0.0,
+      "sensitivity_mean": 1.0,
+      "sensitivity_std": 0.0,
+      "specificity_mean": 1.0,
+      "specificity_std": 0.0
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "mask_source": "kmeans_linear_hue",
+      "auc_mean": 0.9805555555555556,
+      "auc_std": 0.04505684409342746,
+      "accuracy_mean": 0.9722222222222222,
+      "accuracy_std": 0.05507454602093889,
+      "sensitivity_mean": 0.95,
+      "sensitivity_std": 0.10854312136382616,
+      "specificity_mean": 0.9944444444444444,
+      "specificity_std": 0.03042903097250922
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "mask_source": "kmeans_linear_hue",
+      "auc_mean": 0.9768518518518519,
+      "auc_std": 0.0478815440343913,
+      "accuracy_mean": 0.9583333333333334,
+      "accuracy_std": 0.07814295770624798,
+      "sensitivity_mean": 0.95,
+      "sensitivity_std": 0.10854312136382616,
+      "specificity_mean": 0.9666666666666667,
+      "specificity_std": 0.1268540658512312
+    },
+    {
+      "strategy": "PCA + Bayes",
+      "mask_source": "kmeans_linear_hue",
+      "auc_mean": 0.9583333333333334,
+      "auc_std": 0.06306945768059453,
+      "accuracy_mean": 0.8916666666666667,
+      "accuracy_std": 0.08232144267061678,
+      "sensitivity_mean": 0.8555555555555556,
+      "sensitivity_std": 0.14992548170293457,
+      "specificity_mean": 0.9277777777777777,
+      "specificity_std": 0.12132200696576773
+    }
+  ],
+  "repeated_selection_frequency": [
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H",
+      "count": 11
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,S",
+      "count": 6
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,B",
+      "count": 3
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,B,S",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,B,V,R",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,G,B,R,S",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,R",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,R,B,S",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,S,R",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,S,R,B",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,S,V,R,B",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,V",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + SFS",
+      "features": "H,V,S,B,R,G",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "H,G,R",
+      "count": 16
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "a*,G,R",
+      "count": 5
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "H,G,S",
+      "count": 3
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "a*,R,S",
+      "count": 3
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "H,R,G",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "a*,R,G",
+      "count": 1
+    },
+    {
+      "strategy": "Bayes + análisis",
+      "features": "a*,S,R",
+      "count": 1
+    },
+    {
+      "strategy": "PCA + Bayes",
+      "features": "PC1,PC2,PC3",
+      "count": 30
+    }
+  ],
+  "integration": {
+    "spearman_jaccard_vs_feature_shift": -0.8780216726868576,
+    "p_value": 3.2526557100958895e-20,
+    "reference_strategy": "Bayes + análisis",
+    "test_images": [
+      {
+        "name": "unriped_tomato_43.jpeg",
+        "class": "unripe",
+        "split": "test",
+        "jaccard": 0.1048461673039914,
+        "feature_shift": 1.7958418704357348,
+        "llr_best": -15.19798981791562,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "unriped_tomato_1.jpeg",
+        "class": "unripe",
+        "split": "test",
+        "jaccard": 0.11317795922781593,
+        "feature_shift": 5.882070255821609,
+        "llr_best": -15.987148284145174,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "unriped_tomato_6.jpeg",
+        "class": "unripe",
+        "split": "test",
+        "jaccard": 0.15994664142174791,
+        "feature_shift": 4.95542038763027,
+        "llr_best": -7.911187686385615,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "riped_tomato_97.jpeg",
+        "class": "ripe",
+        "split": "test",
+        "jaccard": 0.16339173729618792,
+        "feature_shift": 5.637572678537725,
+        "llr_best": 15.375822086264508,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "unriped_tomato_12.jpeg",
+        "class": "unripe",
+        "split": "test",
+        "jaccard": 0.29496938606652323,
+        "feature_shift": 1.3964566709533122,
+        "llr_best": -16.02190661482145,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "unriped_tomato_65.jpeg",
+        "class": "unripe",
+        "split": "test",
+        "jaccard": 0.4527452331725247,
+        "feature_shift": 2.6966111085999565,
+        "llr_best": -7.994549794031212,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "riped_tomato_83.jpeg",
+        "class": "ripe",
+        "split": "test",
+        "jaccard": 0.5051393451308679,
+        "feature_shift": 1.9101369233869343,
+        "llr_best": 25.258714188001953,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "riped_tomato_52.jpeg",
+        "class": "ripe",
+        "split": "test",
+        "jaccard": 0.5532516745390014,
+        "feature_shift": 2.0668227086046778,
+        "llr_best": 25.480404207313327,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "riped_tomato_6.jpeg",
+        "class": "ripe",
+        "split": "test",
+        "jaccard": 0.6881975446428571,
+        "feature_shift": 0.1752821133472647,
+        "llr_best": 26.565246775085612,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "riped_tomato_22.jpeg",
+        "class": "ripe",
+        "split": "test",
+        "jaccard": 0.7528602627204276,
+        "feature_shift": 0.6667537704458933,
+        "llr_best": 27.328750153831948,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "unriped_tomato_9.jpeg",
+        "class": "unripe",
+        "split": "test",
+        "jaccard": 0.7570387750061743,
+        "feature_shift": 0.5961809935783723,
+        "llr_best": -8.745516715128952,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      },
+      {
+        "name": "riped_tomato_40.jpeg",
+        "class": "ripe",
+        "split": "test",
+        "jaccard": 0.9357372677468913,
+        "feature_shift": 0.2976737500082153,
+        "llr_best": 26.740144613988694,
+        "ok_0": true,
+        "ok_1": true,
+        "ok_2": true,
+        "correct_all": true
+      }
+    ]
+  },
+  "runtime_seconds": 189.7
+}

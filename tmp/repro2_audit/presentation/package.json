@@ -1,0 +1,7 @@
+{
+  "name": "tomato-presentation",
+  "private": true,
+  "description": "Builds Proyecto1_Tomates.pptx from ../results (run tomato_project.py first)",
+  "scripts": { "build": "node build_deck.js" },
+  "dependencies": { "pptxgenjs": "^3.12.0" }
+}
