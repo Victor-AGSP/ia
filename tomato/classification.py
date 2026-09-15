@@ -178,7 +178,8 @@ Transform = Callable[[np.ndarray], np.ndarray]
 
 
 def subset_transform(feature_idx: list[int]) -> Callable[[np.ndarray], Transform]:
-    # Gaussian naive Bayes is invariant to per-feature affine scaling, so no scaler.
+    # Gaussian naive Bayes is (up to GaussianNB's var_smoothing) invariant to per-feature
+    # affine scaling, so no scaler.
     return lambda X_fit: (lambda X: X[:, feature_idx])
 
 
@@ -242,6 +243,7 @@ def evaluate_strategy(name, features, fit_transform, X, y, train_idx, val_idx, t
         "n_tied_thresholds": op["n_tied_thresholds"], "sweep": op["sweep"],
         "val_scores": val_scores,
         "val_metrics": metrics_at(y[val_idx], val_scores, op["threshold"]),
+        "val_metrics_zero": metrics_at(y[val_idx], val_scores, 0.0),
         "val_roc": roc_curve(y[val_idx], val_scores)[:2],
         "gnb_theta": clf.theta_.tolist(), "gnb_var": clf.var_.tolist(),
     }

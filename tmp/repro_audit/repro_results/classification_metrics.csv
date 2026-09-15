@@ -1,7 +1,0 @@
-strategy,split,features,threshold,auc,accuracy,sensitivity,specificity,balanced_accuracy,precision,f1,tn,fp,fn,tp
-Bayes + análisis,val,"H,G,R",7.3768700456360445,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,0,0,6
-Bayes + SFS,val,"H,B,S,R",7.2102034250961875,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,0,0,6
-PCA + Bayes,val,"PC1,PC2,PC3",1.7681527814215658,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,0,0,6
-Bayes + análisis,test,"H,G,R",7.3768700456360445,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,0,0,6
-Bayes + SFS,test,"H,B,S,R",7.2102034250961875,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,0,0,6
-PCA + Bayes,test,"PC1,PC2,PC3",1.7681527814215658,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,0,0,6

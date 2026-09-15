@@ -166,7 +166,7 @@ const feat = (list) => list.join(", ");
   const cfg = [
     ["Clusters", "k = 2 (fruto / fondo), un modelo por imagen y combinación"],
     ["Inicialización", "k-means++, 10 reinicios (menor inercia)"],
-    ["Convergencia", "Δ centroides < 1e-4 o 300 iteraciones (máx. observado: 47)"],
+    ["Convergencia", `Δ centroides < 1e-4 o 300 iteraciones (máx. observado: ${M.IterMax})`],
     ["Semilla", `${M.Seed}; ajuste con ${Number(M.PixelSample).toLocaleString("es-CL")} píxeles, asignación de todos`],
     ["Cluster fruto", "puntaje de objeto: brillo, saturación, compacidad, centralidad, área, borde"],
   ];
@@ -174,9 +174,9 @@ const feat = (list) => list.join(", ");
   const rows = [[hcell("Canales"), hcell("Puntaje"), hcell("Mín. borde"), hcell("Máx. sat."), hcell("Oráculo")]];
   for (const r of seg) rows.push([cell(r.combination, { bold: r.combination === best }), cell(f3(r.dev_heuristic)), cell(f3(r.dev_min_border)), cell(f3(r.dev_max_saturation)), cell(f3(r.dev_oracle_mean), { color: C.muted })]);
   s.addTable(rows, tableOpts(6.05, 1.05, 3.45, [0.65, 0.7, 0.7, 0.7, 0.7]));
-  text(s, "Jaccard medio en desarrollo según la regla para elegir el cluster fruto. El puntaje de objeto es la mejor regla y queda cerca del oráculo: el límite es K-Means, no la regla.", 6.05, 3.35, 3.45, 1.2, { fontSize: 10.5, color: C.muted });
+  text(s, `Jaccard medio en desarrollo según la regla para elegir el cluster fruto. El puntaje de objeto gana en ${M.HeurBestCount} de 7 combinaciones y queda cerca del oráculo: el límite es K-Means, no la regla.`, 6.05, 3.35, 3.45, 1.2, { fontSize: 10.5, color: C.muted });
   text(s, "La máscara de referencia solo se usa para calcular J = |A∩B| / |A∪B|.", 0.5, 3.35, 5.3, 0.4, { fontSize: 12, italic: true });
-  s.addNotes("El oráculo elige el cluster con mayor Jaccard: es la cota superior con esos clusters. Los pesos del puntaje son heurísticos (limitación).");
+  s.addNotes("El oráculo elige el cluster con mayor Jaccard: es la cota superior con esos clusters. Los pesos del puntaje y el prior de área se fijaron a priori a mano, sin usar máscaras de test (limitación).");
 }
 
 // 8. Seven combinations ------------------------------------------------------------------
@@ -208,7 +208,7 @@ const feat = (list) => list.join(", ");
   header(s, 8, `Ejemplos de segmentación (${best})`);
   image(s, "segmentation_examples.png", 0.4, 0.95, 6.3, 4.5);
   card(s, 6.9, 1.05, 2.65, 2.0, "Fallo típico", "Fondo bimodal o follaje brillante: los dos clusters separan dos fondos y el tomate queda repartido.", C.red, 11.5);
-  card(s, 6.9, 3.2, 2.65, 2.0, "Post-procesado", "Apertura + cierre (elipse 5×5), relleno de huecos y eliminación de componentes < 1 %. Mejora las 7 combinaciones.", C.orange, 11.5);
+  card(s, 6.9, 3.2, 2.65, 2.0, "Post-procesado", `Apertura + cierre (elipse 5×5), relleno de huecos y eliminación de componentes < 1 %. Mejora la media de desarrollo en ${M.PostDevBetterCount}/7; en test ${M.BestTestJ} → ${M.BestTestPostJ}.`, C.orange, 11.5);
   s.addNotes("Filas: peor, mediana y mejor imagen de desarrollo. Mostrar que Jaccard alto requiere fondos simples.");
 }
 
@@ -255,8 +255,8 @@ const feat = (list) => list.join(", ");
   image(s, "sfs_trace.png", 0.4, 1.0, 5.4, 3.3);
   text(s, "Wrapper: se añade la variable que maximiza el AUC de validación cruzada 5×10 del mismo Bayes (solo entrenamiento). Se elige el prefijo más corto a ≤ 0.001 del mejor.", 0.5, 4.4, 5.3, 0.9, { fontSize: 11.5 });
   card(s, 6.0, 1.05, 3.55, 1.3, "Seleccionadas", `SFS: ${M.SFSFeatures}\nAnálisis: ${M.AnalysisFeatures}`, C.green, 12.5);
-  card(s, 6.0, 2.5, 3.55, 2.75, "¿Coinciden?", `Sí en H (primera elegida) y R. SFS cambia G por B y S: optimiza el AUC conjunto, no la separación individual, y el criterio está saturado (AUC ≈ 0.98, DE ≈ 0.04). En ${M.NRepeats} particiones SFS eligió ${M.SfsDistinctSubsets} subconjuntos distintos; la regla de análisis repitió el suyo en ${M.AnTopSubsetCount}.`, C.red, 11);
-  s.addNotes("Mensaje: SFS confirma que H es la variable principal, pero su elección posterior es inestable con 36 imágenes.");
+  card(s, 6.0, 2.5, 3.55, 2.75, "¿Coinciden?", `Solo en H (primera elegida). SFS cambia G y R por S y V: optimiza el AUC conjunto, no la separación individual, y el criterio está saturado (AUC ≈ 0.98, DE ≈ 0.04). En ${M.NRepeats} particiones: SFS ${M.SfsDistinctSubsets} conjuntos distintos; análisis ${M.AnDistinctSubsets}.`, C.red, 11);
+  s.addNotes("Mensaje: SFS confirma que H es la variable principal, pero su elección posterior es inestable con 36 imágenes. Incluso diferencias de menos de un nivel de gris entre entornos cambiaron el subconjunto (H,B,S,R en una versión previa) sin cambiar el desempeño en test.");
 }
 
 // 13. Bayes design ---------------------------------------------------------------------
@@ -282,7 +282,7 @@ const feat = (list) => list.join(", ");
   card(s, 0.5, 2.3, 4.0, 1.75, "Criterio: índice de Youden en validación", "J = sens + espec − 1. Sin costos definidos y clases balanceadas: ambos errores pesan igual. Umbral = punto medio entre puntuaciones; empates → centro.", C.green, 11);
   text(s, `Test de ${M.NTest} imágenes sin errores: compatible con exactitud real ≥ 0.74 (Clopper–Pearson 95 %). No permite ordenar las estrategias.`, 0.5, 4.2, 4.0, 1.0, { fontSize: 11.5, bold: true, color: C.red });
   image(s, "roc_curves.png", 4.7, 2.3, 4.85, 3.1);
-  s.addNotes("Los tres umbrales quedan sobre ln θ = 0: con θ = 1 habría un falso positivo en validación. Es la sobreconfianza de Bayes ingenuo.");
+  s.addNotes(`Los tres umbrales quedan sobre ln θ = 0. Con θ = 1 habría errores de validación en ${M.ZeroThrErrors}; ${M.ZeroThrOk} sin errores. La validación es separable: Youden da J = 1 en un intervalo y se toma su punto medio.`);
 }
 
 // 15. PCA -----------------------------------------------------------------------------------
@@ -295,7 +295,7 @@ const feat = (list) => list.join(", ");
   const rows = [[hcell("PC"), hcell("λ"), hcell("Var. %"), hcell("Acum. %")]];
   pca.eigenvalues.slice(0, 5).forEach((ev, i) => rows.push([cell(`PC${i + 1}`, { bold: i < pca.n_components }), cell(f2(ev)), cell((100 * pca.ratio[i]).toFixed(1)), cell((100 * pca.cumulative[i]).toFixed(1))]));
   s.addTable(rows, tableOpts(5.95, 1.05, 3.6, [0.8, 0.9, 0.95, 0.95]));
-  card(s, 5.95, 2.85, 3.6, 2.35, `p = ${M.PCAn} (${M.PCAcum} %)`, "Menor p con ≥ 95 % de varianza; coincide con el codo y con Kaiser (λ₄ ≪ 1). PCA en entrenamiento sobre 8 variables estandarizadas; Bayes sobre PC1–PC3.", C.orange, 11.5);
+  card(s, 5.95, 2.85, 3.6, 2.35, `p = ${M.PCAn} (${M.PCAcum} %)`, "Menor p con ≥ 95 % de varianza; coincide con el codo y con Kaiser (λ₄ ≪ 1). PCA en entrenamiento sobre 8 variables estandarizadas. Decorrelaciona globalmente, pero no garantiza independencia dentro de cada clase.", C.orange, 11.5);
   s.addNotes("Solo PC1 está alineada con la madurez; PC2 y PC3 capturan brillo y amarillo, que dependen del fondo y la iluminación.");
 }
 
@@ -310,12 +310,12 @@ const feat = (list) => list.join(", ");
   text(s, `Exactitud media en test, ${M.NRepeats} particiones, máscaras K-Means (${M.NRepPredictions} predicciones).`, 0.5, 4.85, 6.3, 0.4, { fontSize: 10.5, color: C.muted });
   bullets(s, [
     "Partición principal: las tres empatan con AUC y exactitud 1.",
-    "SFS ≈ análisis: diferencia de pocos errores, dentro de la variabilidad.",
-    "PCA es consistentemente la peor: no usa la etiqueta y reintroduce B, V y b*.",
+    "Las tres difieren en pocos errores, dentro de la variabilidad: no se pueden ordenar.",
+    `PCA vs análisis (gana/empata/pierde): ${M.PcaVsAn}. Estudio exploratorio, no usado para elegir.`,
     `Cada partición repite todo, incluida la segmentación (${M.RepComboFreq}).`,
-    `Si se rehace la selección con máscaras ideales, SFS comete ${M.SfsRepRefErr} errores: sobreajusta la selección.`,
+    `Si se rehace la selección con máscaras ideales, SFS comete ${M.SfsRepRefErr} errores: posible sobreajuste de la selección.`,
   ], 7.0, 1.05, 2.6, 4.2, 11);
-  s.addNotes("Mismas condiciones: mismas particiones, mismo umbral de Youden, mismas métricas. Cada partición elige también la combinación de canales y el post-procesado con su propio desarrollo. Las particiones comparten imágenes: miden estabilidad, no significancia.");
+  s.addNotes("Mismas condiciones: mismas particiones, mismo umbral de Youden, mismas métricas. Cada partición elige también la combinación de canales y el post-procesado con su propio desarrollo. Las particiones comparten imágenes (incluidas las del test principal): miden estabilidad, no significancia, y son 360 predicciones sobre 60 imágenes, no 360 casos nuevos.");
 }
 
 // 17. Integrated analysis -------------------------------------------------------------
@@ -337,8 +337,8 @@ const feat = (list) => list.join(", ");
   stat(s, 6.9, 1.05, 2.7, `ρ = ${M.RhoShift}`, "Jaccard vs desplazamiento de descriptores");
   bullets(s, [
     "Peor máscara → descriptores más contaminados.",
-    "Solo cambiar la máscara del test (mismo modelo y umbral) corrige casi todos los errores.",
-    "Con la selección fija y máscara ideal: 0 errores. La segmentación es la causa dominante.",
+    `${M.TestLowJCorrect}/${M.NTest} imágenes de test con J < 0.2 se clasifican bien: el fondo tiene color compatible con la clase.`,
+    "Con la selección fija y máscara ideal: 0 errores. La segmentación es la principal fuente de errores.",
     "Sin media circular, PCA pierde exactitud.",
   ], 6.9, 2.3, 2.7, 3.0, 11);
   s.addNotes("Ablación controlada: se cambia una sola cosa. Ideal solo en test mantiene variables, modelo y umbral. Diseño fijo mantiene variables y reajusta modelo y umbral. El rediseño completo no es controlado y no se usa para concluir.");
@@ -352,12 +352,12 @@ const feat = (list) => list.join(", ");
     ["1. Mejor combinación", `${best}: J = ${M.BestDevJ} (${M.BestDevPostJ} con post-proceso).`],
     ["2. ¿Por qué?", "R separa rojo/verde; B separa fruto saturado de fondos claros."],
     ["3. Variables (EDA)", "H circular y a* (|d| > 3), luego G y R."],
-    ["4. SFS", `${M.SFSFeatures}. Coincide en H y R con el análisis.`],
-    ["5. Mejor estrategia", "SFS ≈ análisis; análisis es más estable e interpretable."],
+    ["4. SFS", `${M.SFSFeatures}. Coincide solo en H con el análisis.`],
+    ["5. Mejor estrategia", "Equivalentes dentro de la variabilidad; análisis es menos inestable e interpretable."],
     ["6. Punto de operación", "Youden en validación: sin costos, clases balanceadas."],
     ["7. Componentes", `${M.PCAn} PCs: ≥ 95 % varianza (${M.PCAcum} %), codo y Kaiser.`],
-    ["8. ¿PCA mejora?", "No: empata en el test principal y es la peor al repetir."],
-    ["9. Segmentación", `Causa dominante: con selección fija y máscara ideal, errores ${M.AnRepKmErr}/${M.SfsRepKmErr}/${M.PcaRepKmErr} → 0.`],
+    ["8. ¿PCA mejora?", `No: empata en el test principal y al repetir (${M.PcaRepKmAcc.split(" ± ")[0]} de exactitud media).`],
+    ["9. Segmentación", `Principal fuente de errores: con máscara ideal ${M.AnRepKmErr}/${M.SfsRepKmErr}/${M.PcaRepKmErr} → 0. Pero el fondo correlaciona con la clase.`],
   ];
   const w = 2.9, h = 1.3, gx = 0.15, gy = 0.13;
   qa.forEach(([q, a], i) => {
@@ -375,8 +375,8 @@ const feat = (list) => list.join(", ");
   const items = [
     ["Segmentación", `K-Means k=2 con ${best} + post-proceso: J ≈ ${M.BestDevPostJ}. Es el eslabón débil del sistema.`],
     ["Madurez = tono", "Con H como media circular, un Bayes con 3 variables clasifica casi perfectamente."],
-    ["Selección", "Análisis ≈ SFS en desempeño; el análisis es más estable. PCA no aporta."],
-    ["Limitaciones", `${M.NImages} imágenes y test de ${M.NTest}: techo de desempeño. Pesos heurísticos del cluster, sin textura ni forma.`],
+    ["Selección", "Análisis, SFS y PCA equivalentes en este experimento; el análisis es menos inestable. PCA no mejora."],
+    ["Limitaciones", `${M.NImages} imágenes y test de ${M.NTest}: techo de desempeño. El fondo correlaciona con la clase; sin textura ni forma.`],
   ];
   items.forEach(([t, b], i) => {
     const x = 0.6 + (i % 2) * 4.5, y = 1.35 + Math.floor(i / 2) * 1.95;

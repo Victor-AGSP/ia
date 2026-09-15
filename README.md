@@ -14,12 +14,17 @@ tomato/features.py       descriptores de color (RGB, H circular, S, V, a*, b*)
 tomato/classification.py razón de verosimilitudes, Youden, SFS, PCA, bootstrap
 tomato/plots.py          figuras
 tomato/reporting.py      tablas LaTeX y macros generadas desde los resultados
-report.tex               informe (usa results/tex/*.tex; no contiene números escritos a mano)
+report.tex               informe (tablas y cifras principales desde results/tex/*.tex)
 presentation/            generador de la presentación PowerPoint
 data/                    imágenes y máscaras (ripe/, unripe/ con images/ y masks/)
 ```
 
 ## Reproducir
+
+Resultados entregados generados en Linux con Python 3.13.5 y las versiones de
+`requirements.txt`. Pequeñas diferencias de plataforma al leer/redimensionar JPEG pueden
+cambiar el subconjunto de SFS (ver sección Reproducibilidad del informe).
+Regenerar requiere además LaTeX con `babel` español y Node.js + npm.
 
 ```bash
 pip install -r requirements.txt

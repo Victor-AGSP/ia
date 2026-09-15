@@ -63,7 +63,8 @@ def cluster_descriptors(labels: np.ndarray, image: np.ndarray) -> list[dict]:
 def heuristic_score(d: dict) -> float:
     """Object score: bright/saturated, compact, central cluster that avoids the border.
 
-    The area term is a Gaussian prior centred on the typical annotated fruit area.
+    Weights and the area prior (centre 0.38, width 0.32) were fixed a priori by hand; they
+    were not fitted to the reference masks nor tuned on the test images.
     """
     area_prior = math.exp(-((d["area"] - 0.38) / 0.32) ** 2)
     return (0.10 * d["coherence"] + 0.15 * d["centrality"] + 0.30 * d["saturation"]

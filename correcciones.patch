@@ -1,0 +1,620 @@
+diff --git a/.gitignore b/.gitignore
+index e343db4..5277caa 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -6,3 +6,15 @@ build/
+ .vscode/
+ .DS_Store
+ Thumbs.db
++__pycache__/
++*.pyc
++.venv/
++tmp/
++_codex_original/
++*.aux
++*.log
++*.out
++*.toc
++*.rar
++entrega/
++results_check/
+diff --git a/README.md b/README.md
+index 24054b3..21bf358 100644
+--- a/README.md
++++ b/README.md
+@@ -14,13 +14,18 @@ tomato/features.py       descriptores de color (RGB, H circular, S, V, a*, b*)
+ tomato/classification.py razón de verosimilitudes, Youden, SFS, PCA, bootstrap
+ tomato/plots.py          figuras
+ tomato/reporting.py      tablas LaTeX y macros generadas desde los resultados
+-report.tex               informe (usa results/tex/*.tex; no contiene números escritos a mano)
++report.tex               informe (tablas y cifras principales desde results/tex/*.tex)
+ presentation/            generador de la presentación PowerPoint
+ data/                    imágenes y máscaras (ripe/, unripe/ con images/ y masks/)
+ ```
+ 
+ ## Reproducir
+ 
++Resultados entregados generados en Linux con Python 3.13.5 y las versiones de
++`requirements.txt`. Pequeñas diferencias de plataforma al leer/redimensionar JPEG pueden
++cambiar el subconjunto de SFS (ver sección Reproducibilidad del informe).
++Regenerar requiere además LaTeX con `babel` español y Node.js + npm.
++
+ ```bash
+ pip install -r requirements.txt
+ python -X utf8 tomato_project.py            # ~3-5 min; --quick para prueba rápida
+diff --git a/presentation/build_deck.js b/presentation/build_deck.js
+index 7ce919d..34806f9 100644
+--- a/presentation/build_deck.js
++++ b/presentation/build_deck.js
+@@ -166,7 +166,7 @@ const feat = (list) => list.join(", ");
+   const cfg = [
+     ["Clusters", "k = 2 (fruto / fondo), un modelo por imagen y combinación"],
+     ["Inicialización", "k-means++, 10 reinicios (menor inercia)"],
+-    ["Convergencia", "Δ centroides < 1e-4 o 300 iteraciones (máx. observado: 47)"],
++    ["Convergencia", `Δ centroides < 1e-4 o 300 iteraciones (máx. observado: ${M.IterMax})`],
+     ["Semilla", `${M.Seed}; ajuste con ${Number(M.PixelSample).toLocaleString("es-CL")} píxeles, asignación de todos`],
+     ["Cluster fruto", "puntaje de objeto: brillo, saturación, compacidad, centralidad, área, borde"],
+   ];
+@@ -174,9 +174,9 @@ const feat = (list) => list.join(", ");
+   const rows = [[hcell("Canales"), hcell("Puntaje"), hcell("Mín. borde"), hcell("Máx. sat."), hcell("Oráculo")]];
+   for (const r of seg) rows.push([cell(r.combination, { bold: r.combination === best }), cell(f3(r.dev_heuristic)), cell(f3(r.dev_min_border)), cell(f3(r.dev_max_saturation)), cell(f3(r.dev_oracle_mean), { color: C.muted })]);
+   s.addTable(rows, tableOpts(6.05, 1.05, 3.45, [0.65, 0.7, 0.7, 0.7, 0.7]));
+-  text(s, "Jaccard medio en desarrollo según la regla para elegir el cluster fruto. El puntaje de objeto es la mejor regla y queda cerca del oráculo: el límite es K-Means, no la regla.", 6.05, 3.35, 3.45, 1.2, { fontSize: 10.5, color: C.muted });
++  text(s, `Jaccard medio en desarrollo según la regla para elegir el cluster fruto. El puntaje de objeto gana en ${M.HeurBestCount} de 7 combinaciones y queda cerca del oráculo: el límite es K-Means, no la regla.`, 6.05, 3.35, 3.45, 1.2, { fontSize: 10.5, color: C.muted });
+   text(s, "La máscara de referencia solo se usa para calcular J = |A∩B| / |A∪B|.", 0.5, 3.35, 5.3, 0.4, { fontSize: 12, italic: true });
+-  s.addNotes("El oráculo elige el cluster con mayor Jaccard: es la cota superior con esos clusters. Los pesos del puntaje son heurísticos (limitación).");
++  s.addNotes("El oráculo elige el cluster con mayor Jaccard: es la cota superior con esos clusters. Los pesos del puntaje y el prior de área se fijaron a priori a mano, sin usar máscaras de test (limitación).");
+ }
+ 
+ // 8. Seven combinations ------------------------------------------------------------------
+@@ -208,7 +208,7 @@ const feat = (list) => list.join(", ");
+   header(s, 8, `Ejemplos de segmentación (${best})`);
+   image(s, "segmentation_examples.png", 0.4, 0.95, 6.3, 4.5);
+   card(s, 6.9, 1.05, 2.65, 2.0, "Fallo típico", "Fondo bimodal o follaje brillante: los dos clusters separan dos fondos y el tomate queda repartido.", C.red, 11.5);
+-  card(s, 6.9, 3.2, 2.65, 2.0, "Post-procesado", "Apertura + cierre (elipse 5×5), relleno de huecos y eliminación de componentes < 1 %. Mejora las 7 combinaciones.", C.orange, 11.5);
++  card(s, 6.9, 3.2, 2.65, 2.0, "Post-procesado", `Apertura + cierre (elipse 5×5), relleno de huecos y eliminación de componentes < 1 %. Mejora la media de desarrollo en ${M.PostDevBetterCount}/7; en test ${M.BestTestJ} → ${M.BestTestPostJ}.`, C.orange, 11.5);
+   s.addNotes("Filas: peor, mediana y mejor imagen de desarrollo. Mostrar que Jaccard alto requiere fondos simples.");
+ }
+ 
+@@ -255,8 +255,8 @@ const feat = (list) => list.join(", ");
+   image(s, "sfs_trace.png", 0.4, 1.0, 5.4, 3.3);
+   text(s, "Wrapper: se añade la variable que maximiza el AUC de validación cruzada 5×10 del mismo Bayes (solo entrenamiento). Se elige el prefijo más corto a ≤ 0.001 del mejor.", 0.5, 4.4, 5.3, 0.9, { fontSize: 11.5 });
+   card(s, 6.0, 1.05, 3.55, 1.3, "Seleccionadas", `SFS: ${M.SFSFeatures}\nAnálisis: ${M.AnalysisFeatures}`, C.green, 12.5);
+-  card(s, 6.0, 2.5, 3.55, 2.75, "¿Coinciden?", `Sí en H (primera elegida) y R. SFS cambia G por B y S: optimiza el AUC conjunto, no la separación individual, y el criterio está saturado (AUC ≈ 0.98, DE ≈ 0.04). En ${M.NRepeats} particiones SFS eligió ${M.SfsDistinctSubsets} subconjuntos distintos; la regla de análisis repitió el suyo en ${M.AnTopSubsetCount}.`, C.red, 11);
+-  s.addNotes("Mensaje: SFS confirma que H es la variable principal, pero su elección posterior es inestable con 36 imágenes.");
++  card(s, 6.0, 2.5, 3.55, 2.75, "¿Coinciden?", `Solo en H (primera elegida). SFS cambia G y R por S y V: optimiza el AUC conjunto, no la separación individual, y el criterio está saturado (AUC ≈ 0.98, DE ≈ 0.04). En ${M.NRepeats} particiones: SFS ${M.SfsDistinctSubsets} conjuntos distintos; análisis ${M.AnDistinctSubsets}.`, C.red, 11);
++  s.addNotes("Mensaje: SFS confirma que H es la variable principal, pero su elección posterior es inestable con 36 imágenes. Incluso diferencias de menos de un nivel de gris entre entornos cambiaron el subconjunto (H,B,S,R en una versión previa) sin cambiar el desempeño en test.");
+ }
+ 
+ // 13. Bayes design ---------------------------------------------------------------------
+@@ -282,7 +282,7 @@ const feat = (list) => list.join(", ");
+   card(s, 0.5, 2.3, 4.0, 1.75, "Criterio: índice de Youden en validación", "J = sens + espec − 1. Sin costos definidos y clases balanceadas: ambos errores pesan igual. Umbral = punto medio entre puntuaciones; empates → centro.", C.green, 11);
+   text(s, `Test de ${M.NTest} imágenes sin errores: compatible con exactitud real ≥ 0.74 (Clopper–Pearson 95 %). No permite ordenar las estrategias.`, 0.5, 4.2, 4.0, 1.0, { fontSize: 11.5, bold: true, color: C.red });
+   image(s, "roc_curves.png", 4.7, 2.3, 4.85, 3.1);
+-  s.addNotes("Los tres umbrales quedan sobre ln θ = 0: con θ = 1 habría un falso positivo en validación. Es la sobreconfianza de Bayes ingenuo.");
++  s.addNotes(`Los tres umbrales quedan sobre ln θ = 0. Con θ = 1 habría errores de validación en ${M.ZeroThrErrors}; ${M.ZeroThrOk} sin errores. La validación es separable: Youden da J = 1 en un intervalo y se toma su punto medio.`);
+ }
+ 
+ // 15. PCA -----------------------------------------------------------------------------------
+@@ -295,7 +295,7 @@ const feat = (list) => list.join(", ");
+   const rows = [[hcell("PC"), hcell("λ"), hcell("Var. %"), hcell("Acum. %")]];
+   pca.eigenvalues.slice(0, 5).forEach((ev, i) => rows.push([cell(`PC${i + 1}`, { bold: i < pca.n_components }), cell(f2(ev)), cell((100 * pca.ratio[i]).toFixed(1)), cell((100 * pca.cumulative[i]).toFixed(1))]));
+   s.addTable(rows, tableOpts(5.95, 1.05, 3.6, [0.8, 0.9, 0.95, 0.95]));
+-  card(s, 5.95, 2.85, 3.6, 2.35, `p = ${M.PCAn} (${M.PCAcum} %)`, "Menor p con ≥ 95 % de varianza; coincide con el codo y con Kaiser (λ₄ ≪ 1). PCA en entrenamiento sobre 8 variables estandarizadas; Bayes sobre PC1–PC3.", C.orange, 11.5);
++  card(s, 5.95, 2.85, 3.6, 2.35, `p = ${M.PCAn} (${M.PCAcum} %)`, "Menor p con ≥ 95 % de varianza; coincide con el codo y con Kaiser (λ₄ ≪ 1). PCA en entrenamiento sobre 8 variables estandarizadas. Decorrelaciona globalmente, pero no garantiza independencia dentro de cada clase.", C.orange, 11.5);
+   s.addNotes("Solo PC1 está alineada con la madurez; PC2 y PC3 capturan brillo y amarillo, que dependen del fondo y la iluminación.");
+ }
+ 
+@@ -310,12 +310,12 @@ const feat = (list) => list.join(", ");
+   text(s, `Exactitud media en test, ${M.NRepeats} particiones, máscaras K-Means (${M.NRepPredictions} predicciones).`, 0.5, 4.85, 6.3, 0.4, { fontSize: 10.5, color: C.muted });
+   bullets(s, [
+     "Partición principal: las tres empatan con AUC y exactitud 1.",
+-    "SFS ≈ análisis: diferencia de pocos errores, dentro de la variabilidad.",
+-    "PCA es consistentemente la peor: no usa la etiqueta y reintroduce B, V y b*.",
++    "Las tres difieren en pocos errores, dentro de la variabilidad: no se pueden ordenar.",
++    `PCA vs análisis (gana/empata/pierde): ${M.PcaVsAn}. Estudio exploratorio, no usado para elegir.`,
+     `Cada partición repite todo, incluida la segmentación (${M.RepComboFreq}).`,
+-    `Si se rehace la selección con máscaras ideales, SFS comete ${M.SfsRepRefErr} errores: sobreajusta la selección.`,
++    `Si se rehace la selección con máscaras ideales, SFS comete ${M.SfsRepRefErr} errores: posible sobreajuste de la selección.`,
+   ], 7.0, 1.05, 2.6, 4.2, 11);
+-  s.addNotes("Mismas condiciones: mismas particiones, mismo umbral de Youden, mismas métricas. Cada partición elige también la combinación de canales y el post-procesado con su propio desarrollo. Las particiones comparten imágenes: miden estabilidad, no significancia.");
++  s.addNotes("Mismas condiciones: mismas particiones, mismo umbral de Youden, mismas métricas. Cada partición elige también la combinación de canales y el post-procesado con su propio desarrollo. Las particiones comparten imágenes (incluidas las del test principal): miden estabilidad, no significancia, y son 360 predicciones sobre 60 imágenes, no 360 casos nuevos.");
+ }
+ 
+ // 17. Integrated analysis -------------------------------------------------------------
+@@ -337,8 +337,8 @@ const feat = (list) => list.join(", ");
+   stat(s, 6.9, 1.05, 2.7, `ρ = ${M.RhoShift}`, "Jaccard vs desplazamiento de descriptores");
+   bullets(s, [
+     "Peor máscara → descriptores más contaminados.",
+-    "Solo cambiar la máscara del test (mismo modelo y umbral) corrige casi todos los errores.",
+-    "Con la selección fija y máscara ideal: 0 errores. La segmentación es la causa dominante.",
++    `${M.TestLowJCorrect}/${M.NTest} imágenes de test con J < 0.2 se clasifican bien: el fondo tiene color compatible con la clase.`,
++    "Con la selección fija y máscara ideal: 0 errores. La segmentación es la principal fuente de errores.",
+     "Sin media circular, PCA pierde exactitud.",
+   ], 6.9, 2.3, 2.7, 3.0, 11);
+   s.addNotes("Ablación controlada: se cambia una sola cosa. Ideal solo en test mantiene variables, modelo y umbral. Diseño fijo mantiene variables y reajusta modelo y umbral. El rediseño completo no es controlado y no se usa para concluir.");
+@@ -352,12 +352,12 @@ const feat = (list) => list.join(", ");
+     ["1. Mejor combinación", `${best}: J = ${M.BestDevJ} (${M.BestDevPostJ} con post-proceso).`],
+     ["2. ¿Por qué?", "R separa rojo/verde; B separa fruto saturado de fondos claros."],
+     ["3. Variables (EDA)", "H circular y a* (|d| > 3), luego G y R."],
+-    ["4. SFS", `${M.SFSFeatures}. Coincide en H y R con el análisis.`],
+-    ["5. Mejor estrategia", "SFS ≈ análisis; análisis es más estable e interpretable."],
++    ["4. SFS", `${M.SFSFeatures}. Coincide solo en H con el análisis.`],
++    ["5. Mejor estrategia", "Equivalentes dentro de la variabilidad; análisis es menos inestable e interpretable."],
+     ["6. Punto de operación", "Youden en validación: sin costos, clases balanceadas."],
+     ["7. Componentes", `${M.PCAn} PCs: ≥ 95 % varianza (${M.PCAcum} %), codo y Kaiser.`],
+-    ["8. ¿PCA mejora?", "No: empata en el test principal y es la peor al repetir."],
+-    ["9. Segmentación", `Causa dominante: con selección fija y máscara ideal, errores ${M.AnRepKmErr}/${M.SfsRepKmErr}/${M.PcaRepKmErr} → 0.`],
++    ["8. ¿PCA mejora?", `No: empata en el test principal y al repetir (${M.PcaRepKmAcc.split(" ± ")[0]} de exactitud media).`],
++    ["9. Segmentación", `Principal fuente de errores: con máscara ideal ${M.AnRepKmErr}/${M.SfsRepKmErr}/${M.PcaRepKmErr} → 0. Pero el fondo correlaciona con la clase.`],
+   ];
+   const w = 2.9, h = 1.3, gx = 0.15, gy = 0.13;
+   qa.forEach(([q, a], i) => {
+@@ -375,8 +375,8 @@ const feat = (list) => list.join(", ");
+   const items = [
+     ["Segmentación", `K-Means k=2 con ${best} + post-proceso: J ≈ ${M.BestDevPostJ}. Es el eslabón débil del sistema.`],
+     ["Madurez = tono", "Con H como media circular, un Bayes con 3 variables clasifica casi perfectamente."],
+-    ["Selección", "Análisis ≈ SFS en desempeño; el análisis es más estable. PCA no aporta."],
+-    ["Limitaciones", `${M.NImages} imágenes y test de ${M.NTest}: techo de desempeño. Pesos heurísticos del cluster, sin textura ni forma.`],
++    ["Selección", "Análisis, SFS y PCA equivalentes en este experimento; el análisis es menos inestable. PCA no mejora."],
++    ["Limitaciones", `${M.NImages} imágenes y test de ${M.NTest}: techo de desempeño. El fondo correlaciona con la clase; sin textura ni forma.`],
+   ];
+   items.forEach(([t, b], i) => {
+     const x = 0.6 + (i % 2) * 4.5, y = 1.35 + Math.floor(i / 2) * 1.95;
+diff --git a/report.tex b/report.tex
+index 3d51e26..09b3ec8 100644
+--- a/report.tex
++++ b/report.tex
+@@ -42,9 +42,9 @@ morfológico), aunque las diferencias entre combinaciones son pequeñas frente a
+ variabilidad entre imágenes. Con descriptores de color del fruto segmentado (incluyendo el
+ tono como media \emph{circular} y la coordenada $a^*$ de CIELAB), las tres estrategias
+ (selección por análisis: \AnalysisFeatures; SFS: \SFSFeatures; PCA con \PCAn{} componentes)
+-clasifican sin errores el test de la partición principal. Como un test de \NTest{} imágenes no
+-permite distinguirlas, se complementa con intervalos bootstrap y \NRepeats{} particiones
+-independientes, y se cuantifica cómo la calidad de la segmentación afecta a la clasificación.
++clasifican sin errores el test de la partición principal. La unidad de análisis es la región de tomate de cada imagen (una etiqueta por imagen), no cada fruto individual. Como un test de \NTest{} imágenes no
++permite distinguirlas, se complementa con intervalos bootstrap y un estudio exploratorio en \NRepeats{} particiones
++adicionales, y se cuantifica cómo la calidad de la segmentación afecta a la clasificación.
+ \end{abstract}
+ 
+ \tableofcontents
+@@ -186,11 +186,11 @@ relativa y borde la fracción del marco de la imagen que ocupa el cluster. Se el
+ $\arg\max_c s_c$. La referencia se usa \emph{solo} para calcular Jaccard,
+ $J(A,B)=|A\cap B|/|A\cup B|$. Para justificar la regla se comparó en desarrollo con dos reglas
+ simples y con un \emph{oráculo} que elige el cluster con mayor Jaccard (cota superior
+-alcanzable con esos clusters). El puntaje de objeto es la mejor regla automática en todas
+-las combinaciones y queda a 0.01 del oráculo en \BestCombo{} (a lo más 0.035, en G;
+-Tabla~\ref{tab:rules}): el límite principal lo pone K-Means con $k=2$, no la regla.
+-\emph{Limitación:} los pesos del puntaje son heurísticos (fijados a priori, no ajustados por
+-optimización); la tabla muestra su desempeño, pero no se exploró una regla aprendida.
++alcanzable con esos clusters). El puntaje de objeto es la mejor regla automática en
++\HeurBestCount{} de las 7 combinaciones (en B la supera levemente la máxima saturación) y queda a
++0.01 del oráculo en \BestCombo{} (a lo más 0.033, en G; Tabla~\ref{tab:rules}): el límite principal lo pone K-Means con $k=2$, no la regla.
++\emph{Limitación:} los pesos del puntaje y el prior de área son heurísticos (fijados a priori
++a mano, no ajustados por optimización ni con las máscaras de test); la tabla muestra su desempeño, pero no se exploró una regla aprendida.
+ 
+ \begin{table}[H]
+ \centering
+@@ -227,7 +227,7 @@ que entonces los dos clusters separan \emph{dos fondos} y el tomate queda repart
+ 
+ \textbf{Post-procesado.} Apertura y cierre (elipse $5\times5$), relleno de huecos y
+ eliminación de componentes $<1\%$ de la imagen elevan el Jaccard de desarrollo de \BestCombo{}
+-a \BestDevPostJ{} (mejora en las siete combinaciones), por lo que se usa para extraer
++a \BestDevPostJ{} (mejora la media de desarrollo en \PostDevBetterCount{} de las 7 combinaciones; en test, para \BestCombo{}, pasa de \BestTestJ{} a \BestTestPostJ), por lo que se usa para extraer
+ características (decisión tomada en desarrollo: \UsePost).
+ 
+ \begin{figure}[H]
+@@ -318,14 +318,17 @@ menos de $10^{-3}$ del mejor (parsimonia cuando el criterio se satura).
+ \end{table}
+ 
+ \textbf{Seleccionadas: \SFSFeatures.} Coincide con la selección por análisis en $\bar H$
+-(primera variable elegida, confirmando el análisis) y $\bar R$, pero reemplaza $\bar G$ por
+-$\bar B$ y $\bar S$. Razones de la diferencia: (i) SFS optimiza el desempeño conjunto, no la
+-separación individual; $\bar B$ y $\bar S$ son débiles solas, pero pueden aportar cuando la
+-máscara incluye fondo claro o poco saturado (hipótesis coherente con la Figura~\ref{fig:fb});
++(primera variable elegida, confirmando el análisis), pero reemplaza $\bar G$ y $\bar R$ por
++$\bar S$ y $\bar V$. Razones de la diferencia: (i) SFS optimiza el desempeño conjunto, no la
++separación individual; $\bar S$ y $\bar V$ son débiles solas ($|d|<1$), pero separan saturación y
++brillo del tono y pueden aportar cuando la máscara incluye fondo (hipótesis coherente con la
++Figura~\ref{fig:fb});
+ (ii) SFS no considera redundancia explícitamente, solo si el AUC mejora; (iii) el criterio está saturado ($\text{AUC}\approx0.98$)
+ y la DE entre pliegues ($\approx0.04$) supera las diferencias entre subconjuntos, por lo
+-que el orden después de $\bar H$ es inestable (ver la frecuencia de subconjuntos en las
+-particiones repetidas, Sección~\ref{sec:rep}).
++que la elección después de $\bar H$ es inestable (ver la frecuencia de subconjuntos en las
++particiones repetidas, Sección~\ref{sec:rep}). Esta sensibilidad también se observa entre
++entornos: diferencias menores a un nivel de gris al leer y redimensionar las imágenes bastan
++para que SFS elija otro subconjunto con el mismo desempeño en test (Sección Reproducibilidad).
+ 
+ % ======================================================================================
+ \section{Clasificador bayesiano y regla de decisión}
+@@ -340,8 +343,9 @@ verosimilitud en entrenamiento (suavizado de varianza $10^{-9}\max_j\sigma^2_j$)
+ \]
+ La regla de Bayes de mínimo error corresponde a $\theta=P(\omega_0)/P(\omega_1)$ (con
+ costos, $\theta=\tfrac{(C_{10}-C_{00})P(\omega_0)}{(C_{01}-C_{11})P(\omega_1)}$); variar
+-$\theta$ recorre la curva ROC. Bayes ingenuo es invariante a reescalar cada variable, así
+-que las variables seleccionadas no se estandarizan (sí antes de PCA).
++$\theta$ recorre la curva ROC. Bayes ingenuo es prácticamente invariante a reescalar cada
++variable (salvo el pequeño suavizado de varianza de \texttt{GaussianNB}), así que las
++variables seleccionadas no se estandarizan (sí antes de PCA).
+ 
+ \textbf{Punto de operación: índice de Youden.} $J(\theta)=\text{sens}(\theta)+\text{espec}(\theta)-1$
+ se maximiza en validación. Se elige porque no hay costos de error definidos en el enunciado,
+@@ -365,10 +369,12 @@ que fue elegido.
+ \tabin{results/tex/operating_points.tex}
+ \end{table}
+ 
+-Los tres umbrales óptimos son mayores que $\ln\theta=0$: con $\theta=1$ un inmaduro de
+-validación sería falso positivo en las tres estrategias. Es una consecuencia del supuesto
+-ingenuo (variables correlacionadas $\Rightarrow$ $|\ln\Lambda|$ exagerado) y muestra por qué el
+-umbral debe calibrarse en validación y no fijarse en el valor teórico.
++Los tres umbrales de Youden son mayores que $\ln\theta=0$. Con $\theta=1$ habría errores de
++validación en \ZeroThrErrors; \ZeroThrOk{} no tendría errores. Como la validación es separable,
++Youden alcanza $J=1$ en todo un intervalo de umbrales y el elegido es el punto medio de ese
++hueco, no un valor único. Un umbral positivo no prueba por sí solo sobreconfianza, pero es
++compatible con el supuesto ingenuo (variables correlacionadas pueden exagerar $|\ln\Lambda|$) y
++muestra por qué el umbral se calibra en validación.
+ 
+ \begin{table}[H]
+ \centering
+@@ -429,8 +435,9 @@ combina brillo y desaturación (R, B, V frente a S y $b^*$); PC3 es un eje amari
+ ($b^*$, V). Solo PC1 está alineada con la clase: PCA maximiza varianza, no separación.}
+ \end{figure}
+ 
+-Las componentes son ortogonales en entrenamiento, lo que hace más razonable el supuesto de
+-independencia de Bayes ingenuo. Como información complementaria (\emph{no} usada para
++Las componentes están decorrelacionadas globalmente en entrenamiento, pero eso no garantiza
++independencia ni decorrelación dentro de cada clase, que es lo que asume Bayes ingenuo (por
++ejemplo, PC1 y PC2 siguen correlacionadas dentro de cada clase). Como información complementaria (\emph{no} usada para
+ elegir $p$), el desempeño en validación ya es máximo desde $p=1$:
+ 
+ \begin{table}[H]
+@@ -445,12 +452,15 @@ elegir $p$), el desempeño en validación ya es máximo desde $p=1$:
+ En la partición principal las tres estrategias empatan con desempeño perfecto
+ (Tabla~\ref{tab:metrics}), por lo que ese test no permite ordenarlas. Para comparar bajo
+ las mismas condiciones con más evidencia, se repitió el protocolo completo en \NRepeats{}
+-particiones 60/20/20 independientes: elección de la combinación de canales y del
++particiones 60/20/20 adicionales (semillas distintas): elección de la combinación de canales y del
+ post-procesado con el Jaccard de desarrollo de cada partición, selección por análisis, SFS,
+ PCA, umbral de Youden y test. La combinación elegida fue \RepComboFreq{} particiones, con
+ post-procesado en \RepPostCount. (Los K-Means por imagen no dependen de la partición, por lo
+ que se calculan una sola vez.) Las particiones comparten imágenes, así que no son muestras
+-independientes: sirven para medir estabilidad, no para pruebas de significancia.
++independientes: sirven para medir estabilidad, no para pruebas de significancia. Es un
++estudio exploratorio posterior: las 12 imágenes del test principal reaparecen en
++entrenamiento o validación de otras particiones, por lo que \emph{no} se usa para elegir el
++sistema ni para desempatar el test principal.
+ 
+ \begin{table}[H]
+ \centering
+@@ -468,24 +478,26 @@ la Sección~\ref{sec:integ}.}\label{tab:rep}
+ repetidas, para el sistema y las variantes de la ablación.}
+ \end{figure}
+ 
+-\textbf{Lectura.} Con máscaras K-Means, Bayes + SFS obtiene la mayor exactitud media
+-(\SfsRepKmAcc; \SfsRepKmErr{} errores en \NRepPredictions{} predicciones), seguido muy de
+-cerca por Bayes + análisis (\AnRepKmAcc; \AnRepKmErr{} errores) y, más atrás, PCA + Bayes
+-(\PcaRepKmAcc; \PcaRepKmErr{} errores, sobre todo maduros clasificados como inmaduros). La
+-diferencia entre las dos selecciones es de unos pocos errores y queda dentro de la
+-variabilidad entre particiones, por lo que \emph{no} es concluyente; la desventaja de PCA
+-sí es consistente.
+-
+-\textbf{Estabilidad de la selección.} La regla por análisis eligió el mismo subconjunto en
+-\AnTopSubsetCount{} de las \NRepeats{} particiones (las alternativas cambian $\bar H$ por
+-$\bar a^*$, su sustituto casi colineal). SFS produjo \SfsDistinctSubsets{} subconjuntos
+-distintos; incluyó $\bar H$ en \SfsWithHCount{} particiones y se quedó \emph{solo} con
++\textbf{Lectura.} Con máscaras K-Means, las exactitudes medias son Bayes + SFS \SfsRepKmAcc{}
++(\SfsRepKmErr{} errores en \NRepPredictions{} predicciones), Bayes + análisis \AnRepKmAcc{}
++(\AnRepKmErr{} errores) y PCA + Bayes \PcaRepKmAcc{} (\PcaRepKmErr{} errores, sobre todo
++maduros clasificados como inmaduros). Comparando partición por partición, PCA gana/empata/pierde
++\PcaVsAn{} veces frente a análisis y \PcaVsSfs{} frente a SFS. Las diferencias son de pocos
++errores y quedan dentro de la variabilidad entre particiones: en este estudio \emph{no} se
++puede ordenar a las tres estrategias.
++
++\textbf{Estabilidad de la selección} (conjuntos contados sin importar el orden). La regla por
++análisis produjo \AnDistinctSubsets{} subconjuntos distintos; el más frecuente fue
++\AnTopSubset{} (\AnTopSubsetCount{} de \NRepeats) y el de la partición principal apareció
++\AnMainSubsetCount{} veces; las alternativas suelen cambiar $\bar H$ por $\bar a^*$, su
++sustituto casi colineal. SFS produjo \SfsDistinctSubsets{} subconjuntos distintos; incluyó $\bar H$ en \SfsWithHCount{} particiones y se quedó \emph{solo} con
+ $\bar H$ en \SfsOnlyHCount. Un indicio adicional: si toda la selección se rehace con máscaras
+ de referencia, SFS es la única estrategia con errores (\SfsRepRefErr, frente a \AnRepRefErr{}
+ de análisis y \PcaRepRefErr{} de PCA), mientras que con la selección hecha sobre K-Means y
+ máscaras ideales no comete ninguno (\SfsRepFixErr, Sección~\ref{sec:integ}). Con 36 imágenes y
+-un criterio saturado, el \emph{wrapper} sobreajusta la propia selección; una regla simple
+-guiada por el análisis es más estable.
++un criterio saturado, una hipótesis compatible es que el \emph{wrapper} sobreajuste la propia
++selección; estos datos no aíslan ese mecanismo. La regla guiada por el análisis resultó menos
++inestable, aunque tampoco repite siempre el mismo subconjunto.
+ 
+ \textbf{¿Por qué PCA no mejora?} PCA es no supervisado: conserva direcciones de máxima
+ varianza, y en este problema buena parte de la varianza se debe al brillo y al fondo
+@@ -536,11 +548,11 @@ validación) para las imágenes de test.}
+ \end{table}
+ 
+ \textbf{Mecanismo.} Una máscara peor contamina los descriptores: la distancia entre
+-$\mathbf{x}$ con máscara K-Means y con máscara de referencia crece monótonamente al bajar el
++$\mathbf{x}$ con máscara K-Means y con máscara de referencia muestra una asociación negativa fuerte con el
+ Jaccard ($\rho=\RhoShift$).
+ 
+-\textbf{Efecto en la clasificación.} En la partición principal todas las variantes aciertan
+-(Tabla~\ref{tab:mask}), por lo que el efecto se mide en las \NRepeats{} particiones
++\textbf{Efecto en la clasificación.} En la partición principal todas las variantes de máscara aciertan
++(Tabla~\ref{tab:mask}; solo la ablación del tono con PCA falla), por lo que el efecto se mide en las \NRepeats{} particiones
+ (Tabla~\ref{tab:rep}):
+ \begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+ \item \emph{Ideal solo en test, mismo modelo.} Sin tocar variables, modelo ni umbral, los
+@@ -562,19 +574,22 @@ cota ideal, no una alternativa disponible en operación. La variante de rediseñ
+ usa para esta conclusión, porque ahí cambian también las variables (SFS pasa a elegir solo
+ $\bar H$ y comete \SfsRepRefErr{} errores).
+ 
+-\textbf{¿Por qué el clasificador tolera Jaccard bajos?} Varias imágenes de test con
+-$J<0.2$ se clasifican bien. El descriptor dominante es el tono medio, una magnitud cromática
++\textbf{¿Por qué el clasificador tolera Jaccard bajos?} \TestLowJCorrect{} de las \NTest{}
++imágenes de test tienen $J<0.2$ y aun así se clasifican bien. El descriptor dominante es el tono medio, una magnitud cromática
+ que no depende del brillo; y el error típico de K-Means incluye píxeles cuyo tono es
+ compatible con la clase (p.\,ej.\ follaje verde junto a tomates verdes). Cabe esperar que
+ el sistema sea vulnerable cuando el fondo incluido tiene el tono de la clase contraria
+ (tomate rojo entre hojas); es coherente con que los errores de PCA con máscaras K-Means sean
+-sobre todo maduros clasificados como inmaduros.
++sobre todo maduros clasificados como inmaduros. \emph{Limitación:} en este conjunto el color
++del fondo está correlacionado con la clase, así que el sistema puede acertar en parte por la
++escena y no solo por el fruto; esto limita cuánto se puede generalizar el efecto de la
++segmentación.
+ 
+ \textbf{Ablación del tono.} Si $\bar H$ se calcula con media aritmética en $[0,360)$, los
+ tomates rojos con píxeles a ambos lados de $0^\circ$ obtienen tonos espurios. En las
+ particiones repetidas la exactitud de PCA + Bayes cae de \PcaRepKmAcc{} a \PcaRepLinAcc{}
+-(\PcaRepLinErr{} errores) y la de SFS a \SfsRepLinAcc; la selección por análisis resiste
+-(\AnRepLinAcc) porque sustituye $\bar H$ por $\bar a^*$, que no tiene discontinuidad.
++(\PcaRepLinErr{} errores), mientras que SFS (\SfsRepLinAcc) y análisis (\AnRepLinAcc) caen poco,
++porque pueden apoyarse en $\bar a^*$, que no tiene discontinuidad.
+ 
+ % ======================================================================================
+ \section{Respuestas a las preguntas del proyecto}
+@@ -587,25 +602,28 @@ fondos claros o grises (B alto); juntos cubren los dos tipos de fondo del conjun
+ ventaja es pequeña frente a la DE entre imágenes, así que es una preferencia débil.
+ \item \textbf{Características discriminantes (exploratorio):} tono circular $\bar H$ y
+ $\bar a^*$ ($|d|>3$), seguidos de $\bar G$ y $\bar R$; B, S, V y $b^*$ discriminan poco.
+-\item \textbf{SFS:} \SFSFeatures. Coincide en $\bar H$ y $\bar R$ con la selección por
+-análisis (\AnalysisFeatures), pero cambia $\bar G$ por $\bar B$ y $\bar S$, porque optimiza
++\item \textbf{SFS:} \SFSFeatures. Coincide solo en $\bar H$ con la selección por
++análisis (\AnalysisFeatures) y cambia $\bar G$ y $\bar R$ por $\bar S$ y $\bar V$, porque optimiza
+ el AUC conjunto con un criterio saturado y ruidoso; en las particiones repetidas eligió
+ \SfsDistinctSubsets{} subconjuntos distintos, con $\bar H$ en \SfsWithHCount{} de \NRepeats.
+ \item \textbf{Mejor estrategia:} en la partición principal empatan (exactitud y AUC de 1). En
+-\NRepeats{} particiones, SFS (\SfsRepKmAcc) y análisis (\AnRepKmAcc) son equivalentes dentro de
+-la variabilidad; la selección por análisis es más estable y más interpretable.
++\NRepeats{} particiones, SFS (\SfsRepKmAcc) y análisis (\AnRepKmAcc) y PCA (\PcaRepKmAcc) son
++equivalentes dentro de la variabilidad; la selección por análisis es menos inestable y más
++interpretable.
+ \item \textbf{Punto de operación:} índice de Youden en validación sobre $\ln\Lambda$, porque no
+ hay costos definidos, las clases están balanceadas y ambos errores pesan igual.
+ \item \textbf{Componentes:} \PCAn, el menor número con $\ge95\%$ de varianza acumulada
+ (\PCAcum\,\%), coincidente con el codo y con Kaiser ($\lambda_4\ll1$).
+-\item \textbf{¿PCA mejora?} No: empata en la partición principal y es la peor en las
+-particiones repetidas (\PcaRepKmAcc), por maximizar varianza en vez de separación.
++\item \textbf{¿PCA mejora?} No: empata en la partición principal y en las particiones
++repetidas tiene una exactitud media similar (\PcaRepKmAcc; gana/empata/pierde \PcaVsAn{} frente
++a análisis). Maximiza varianza, no separación, y es la más sensible a la ablación del tono.
+ \item \textbf{Efecto de la segmentación:} peor Jaccard $\Rightarrow$ descriptores más desplazados
+ ($\rho=\RhoShift$). Con la selección fija, usar la máscara ideal elimina los
+ \AnRepKmErr/\SfsRepKmErr/\PcaRepKmErr{} errores del sistema en las \NRepeats{} particiones, y
+ usarla solo en test (mismo modelo) deja \AnRepSwapErr/\SfsRepSwapErr/\PcaRepSwapErr: la
+-segmentación es la causa dominante de los errores, aunque el tono medio hace al clasificador
+-bastante tolerante a máscaras imperfectas.
++segmentación es la principal fuente de los errores observados. Aun así, \TestLowJCorrect{}
++imágenes de test con $J<0.2$ se clasifican bien, porque el fondo incluido suele tener un color
++compatible con la clase.
+ \end{enumerate}
+ 
+ % ======================================================================================
+@@ -614,15 +632,17 @@ bastante tolerante a máscaras imperfectas.
+ \textbf{Conclusiones.} (1) K-Means con $k=2$ segmenta de forma moderada
+ (Jaccard $\approx0.6$ en desarrollo con \BestCombo{} + post-procesado) y es el eslabón débil
+ del sistema. (2) La madurez es esencialmente un problema de tono: con $\bar H$ calculado como
+-media circular, un Bayes gaussiano con 3 variables clasifica casi perfectamente. (3) La
+-selección guiada por el análisis iguala a SFS y es más estable; PCA no aporta porque no usa
+-la etiqueta. (4) En una ablación controlada (selección fija), la máscara ideal elimina los
+-errores restantes: la segmentación es su causa dominante en este conjunto.
++media circular, un Bayes gaussiano con 3 variables clasifica casi perfectamente. (3) En este experimento, la selección guiada por el análisis, SFS y PCA tienen desempeño
++equivalente; el análisis es menos inestable y más interpretable, y PCA no mejora a las otras
++dos. (4) En una ablación controlada (selección fija), la máscara ideal elimina los errores
++observados en las particiones repetidas: la segmentación es su principal fuente en este conjunto.
+ 
+ \textbf{Limitaciones.} Conjunto pequeño (\NImages{} imágenes; test de \NTest), cercano al techo
+ de desempeño, lo que impide ordenar estrategias con un único test; la ruptura de empates se
+ apoya en particiones repetidas, que comparten imágenes y no son independientes entre sí. Los
+-pesos del puntaje de objeto son heurísticos. K-Means solo usa color (sin textura ni forma) y
++pesos del puntaje de objeto son heurísticos. El color del fondo está correlacionado con la
++clase, por lo que no se garantiza generalización a otras escenas. Se clasifica la región de
++tomate por imagen, no cada fruto. K-Means solo usa color (sin textura ni forma) y
+ $k=2$ falla con fondos bimodales. Bayes ingenuo ignora correlaciones y produce $\ln\Lambda$
+ sobreconfiados. Las imágenes se reducen a \MaxSide{} píxeles, por lo que Jaccard se mide a esa
+ resolución. \textbf{Trabajo futuro:} $k>2$ con selección de varios clusters, características
+@@ -631,9 +651,13 @@ espaciales (posición, textura), Bayes con covarianza completa y un conjunto de
+ \section*{Reproducibilidad}
+ 
+ Todo el experimento se regenera con \texttt{python -X utf8 tomato\_project.py}
+-(parámetros y semillas en \texttt{tomato/config.py}). Las tablas y todos los números de
+-este informe se generan automáticamente en \texttt{results/tex/}, de modo que el PDF no
+-puede quedar desalineado con el código. K-Means se ejecuta con un único hilo OpenMP. Con varios
++(parámetros y semillas en \texttt{tomato/config.py}). Las tablas y los números de este informe se generan
++automáticamente en \texttt{results/tex/}; las interpretaciones escritas se revisaron contra la
++corrida entregada. Los resultados entregados se obtuvieron en Linux (Python 3.13.5) con las versiones de
++\texttt{requirements.txt}, y se reprodujeron idénticos en un segundo equipo Linux. Una versión
++previa, generada en otro entorno, difería en menos de un nivel de gris al leer y redimensionar
++las imágenes; esa diferencia bastó para que SFS eligiera otro subconjunto
++($\bar H,\bar B,\bar S,\bar R$) con el mismo desempeño perfecto en test. K-Means se ejecuta con un único hilo OpenMP. Con varios
+ hilos, las sumas en coma flotante de scikit-learn dependen del número de núcleos; en una prueba
+ con 1 frente a 16 hilos, 53 de 180 ejecuciones produjeron etiquetas distintas (pequeñas
+ diferencias bastan para cambiar qué reinicio de K-Means gana). Con un hilo los resultados son
+diff --git a/requirements.txt b/requirements.txt
+index aaf36fc..e32f432 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -6,3 +6,4 @@ scikit-learn==1.6.1
+ opencv-python==4.13.0.*
+ matplotlib==3.10.0
+ Pillow>=10
++threadpoolctl==3.6.0
+diff --git a/tomato/classification.py b/tomato/classification.py
+index 1ddb666..9ec86a7 100644
+--- a/tomato/classification.py
++++ b/tomato/classification.py
+@@ -178,7 +178,8 @@ Transform = Callable[[np.ndarray], np.ndarray]
+ 
+ 
+ def subset_transform(feature_idx: list[int]) -> Callable[[np.ndarray], Transform]:
+-    # Gaussian naive Bayes is invariant to per-feature affine scaling, so no scaler.
++    # Gaussian naive Bayes is (up to GaussianNB's var_smoothing) invariant to per-feature
++    # affine scaling, so no scaler.
+     return lambda X_fit: (lambda X: X[:, feature_idx])
+ 
+ 
+@@ -242,6 +243,7 @@ def evaluate_strategy(name, features, fit_transform, X, y, train_idx, val_idx, t
+         "n_tied_thresholds": op["n_tied_thresholds"], "sweep": op["sweep"],
+         "val_scores": val_scores,
+         "val_metrics": metrics_at(y[val_idx], val_scores, op["threshold"]),
++        "val_metrics_zero": metrics_at(y[val_idx], val_scores, 0.0),
+         "val_roc": roc_curve(y[val_idx], val_scores)[:2],
+         "gnb_theta": clf.theta_.tolist(), "gnb_var": clf.var_.tolist(),
+     }
+diff --git a/tomato/features.py b/tomato/features.py
+index 524d943..7996ffd 100644
+--- a/tomato/features.py
++++ b/tomato/features.py
+@@ -41,11 +41,13 @@ def extract_features(image: np.ndarray, mask: np.ndarray, linear_hue: bool = Fal
+ 
+     ``linear_hue=True`` reproduces the naive arithmetic mean of H in [0, 360) and exists
+     only for the ablation that quantifies why the circular mean is required.
+-    An empty mask (segmentation failure) falls back to the whole image and is flagged so
+-    the failure stays visible in the feature table instead of producing NaNs.
++    An empty mask is a segmentation failure: it raises instead of silently describing the
++    whole image (background), so the classifier never sees non-fruit descriptors.
+     """
+     empty = not mask.any()
+-    region = np.ones(image.shape[:2], dtype=bool) if empty else mask
++    if empty:
++        raise ValueError("Segmentación fallida: la máscara del fruto está vacía")
++    region = mask
+     colours = pixel_colours(image)
+     feats = {name: float(colours[name][region].mean()) for name in config.FEATURES if name != "H"}
+     hue = colours["H"][region]
+diff --git a/tomato/plots.py b/tomato/plots.py
+index 08dc963..fdf51e8 100644
+--- a/tomato/plots.py
++++ b/tomato/plots.py
+@@ -308,7 +308,7 @@ def repeated_splits(rep: pd.DataFrame, out: Path):
+     handles = [matplotlib.patches.Patch(facecolor="#888888", alpha=shades[s], hatch=hatches[s], edgecolor="black",
+                                         label=l) for s, l in sources]
+     axes[1].legend(handles=handles, frameon=False, fontsize=8, loc="upper left")
+-    fig.suptitle(f"{n_repeats} particiones 60/20/20 independientes (protocolo completo en cada una)", y=1.0)
++    fig.suptitle(f"{n_repeats} particiones 60/20/20 adicionales (protocolo completo en cada una)", y=1.0)
+     _save(fig, out / "repeated_splits.png")
+ 
+ 
+diff --git a/tomato/reporting.py b/tomato/reporting.py
+index 71189c4..e65f7c4 100644
+--- a/tomato/reporting.py
++++ b/tomato/reporting.py
+@@ -241,13 +241,36 @@ def write_macros(out: Path, ctx: dict):
+     macros["AuthorLine"] = f"{config.AUTHORS}\\\\" if config.AUTHORS else ""
+     macros["NRepPredictions"] = int(ctx["repeated"].query("mask_source == 'kmeans' and strategy == 'Bayes + SFS'")
+                                     [["tn", "fp", "fn", "tp"]].to_numpy().sum())
++    # Subset frequencies are counted as sets (selection_freq is already order-independent).
+     freq = ctx["selection_freq"]
+-    top = freq[freq.strategy == "Bayes + análisis"].sort_values("count", ascending=False).iloc[0]
+-    macros["AnTopSubsetCount"] = int(top["count"])
+-    macros["SfsOnlyHCount"] = int(freq[(freq.strategy == "Bayes + SFS") & (freq.features == "H")]["count"].sum())
+-    macros["SfsWithHCount"] = int(freq[(freq.strategy == "Bayes + SFS") & freq.features.str.split(",").map(
+-        lambda fs: "H" in fs)]["count"].sum())
+-    macros["SfsDistinctSubsets"] = int((freq.strategy == "Bayes + SFS").sum())
++    canon = lambda feats: ",".join(sorted(feats))
++    for key, name, main in (("An", "Bayes + análisis", ctx["analysis_features"]),
++                            ("Sfs", "Bayes + SFS", ctx["sfs_features"])):
++        g = freq[freq.strategy == name].sort_values("count", ascending=False)
++        macros[f"{key}DistinctSubsets"] = len(g)
++        macros[f"{key}TopSubset"] = tex_features(g.iloc[0]["features"].split(","))
++        macros[f"{key}TopSubsetCount"] = int(g.iloc[0]["count"])
++        macros[f"{key}MainSubsetCount"] = int(g[g.features == canon(main)]["count"].sum())
++    sfs = freq[freq.strategy == "Bayes + SFS"]
++    macros["SfsOnlyHCount"] = int(sfs[sfs.features == "H"]["count"].sum())
++    macros["SfsWithHCount"] = int(sfs[sfs.features.str.split(",").map(lambda fs: "H" in fs)]["count"].sum())
++    # Paired comparison of test accuracy per repeated split (wins / ties / losses of PCA).
++    acc = ctx["repeated"].query("mask_source == 'kmeans'").pivot(index="repeat", columns="strategy", values="accuracy")
++    for key, name in (("An", "Bayes + análisis"), ("Sfs", "Bayes + SFS")):
++        d = acc["PCA + Bayes"] - acc[name]
++        macros[f"PcaVs{key}"] = f"{int((d > 0).sum())}/{int((d == 0).sum())}/{int((d < 0).sum())}"
++    # Theoretical threshold ln(theta) = 0 on validation (diagnostic only).
++    labels = {"Bayes + análisis": "análisis", "Bayes + SFS": "SFS", "PCA + Bayes": "PCA"}
++    zero = [f"{labels[r['name']]} ({r['val_metrics_zero']['fp']} FP, {r['val_metrics_zero']['fn']} FN)"
++            for r in ctx["results"] if r["val_metrics_zero"]["fp"] + r["val_metrics_zero"]["fn"] > 0]
++    ok = [labels[r["name"]] for r in ctx["results"] if r["val_metrics_zero"]["fp"] + r["val_metrics_zero"]["fn"] == 0]
++    macros["ZeroThrErrors"] = ", ".join(zero) if zero else "ninguna estrategia"
++    macros["ZeroThrOk"] = ", ".join(ok) if ok else "ninguna"
++    seg = ctx["seg_summary"]
++    macros["IterMax"] = ctx["iter_max"]
++    macros["HeurBestCount"] = int((seg["dev_heuristic"] >= seg[["dev_min_border", "dev_max_saturation"]].max(axis=1)).sum())
++    macros["PostDevBetterCount"] = int((seg["dev_post_mean"] > seg["dev_mean"]).sum())
++    macros["TestLowJCorrect"] = ctx["test_low_j_correct"]
+     lines = [f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in macros.items()]
+     (out / "tex" / "values.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
+ 
+diff --git a/tomato/segmentation.py b/tomato/segmentation.py
+index f3ae7f1..676f909 100644
+--- a/tomato/segmentation.py
++++ b/tomato/segmentation.py
+@@ -63,7 +63,8 @@ def cluster_descriptors(labels: np.ndarray, image: np.ndarray) -> list[dict]:
+ def heuristic_score(d: dict) -> float:
+     """Object score: bright/saturated, compact, central cluster that avoids the border.
+ 
+-    The area term is a Gaussian prior centred on the typical annotated fruit area.
++    Weights and the area prior (centre 0.38, width 0.32) were fixed a priori by hand; they
++    were not fitted to the reference masks nor tuned on the test images.
+     """
+     area_prior = math.exp(-((d["area"] - 0.38) / 0.32) ** 2)
+     return (0.10 * d["coherence"] + 0.15 * d["centrality"] + 0.30 * d["saturation"]
+diff --git a/tomato_project.py b/tomato_project.py
+index 824ef28..0cd0654 100644
+--- a/tomato_project.py
++++ b/tomato_project.py
+@@ -13,7 +13,7 @@ Pipeline (every decision uses train/validation only; the test images never feed
+    analysis-based subset, SFS subset, and PCA components. Threshold by Youden on validation.
+ 6. Final test evaluation with bootstrap CIs, plus declared complementary analyses that do
+    not modify the system: a controlled mask ablation and a repeated-split study that
+-   re-runs the whole protocol (segmentation choice included) on independent partitions.
++   re-runs the whole protocol (segmentation choice included) on additional partitions.
+ 
+ Usage:  python tomato_project.py [--data data] [--out results] [--quick]
+ """
+@@ -267,7 +267,7 @@ def main():
+     plots.integration_scatter(per_image, ref_res["name"], out)
+     test_images = per_image.iloc[te].sort_values("jaccard")
+ 
+-    # 7. Robustness: the whole protocol on repeated independent splits -----------------
++    # 7. Robustness: the whole protocol on repeated additional splits -----------------
+     rep_rows = []
+     for r in range(n_repeats):
+         seed_r = config.SEED + 1 + r
+@@ -292,8 +292,10 @@ def main():
+     rep_summary.columns = [f"{a}_{b}" for a, b in rep_summary.columns]
+     rep_summary = rep_summary.join(grouped[["fp", "fn", "corrected", "introduced"]].sum()).reset_index()
+     rep_summary.to_csv(out / "repeated_splits_summary.csv", index=False)
+-    selection_freq = (rep[rep.mask_source == "kmeans"].groupby("strategy")["features"].value_counts()
+-                      .rename("count").reset_index())
++    # Subsets are counted as sets: "H,G,R" and "G,H,R" are the same selection.
++    km_rep = rep[rep.mask_source == "kmeans"].assign(
++        features=lambda d: d["features"].map(lambda f: ",".join(sorted(f.split(",")))))
++    selection_freq = km_rep.groupby("strategy")["features"].value_counts().rename("count").reset_index()
+     selection_freq.to_csv(out / "repeated_selection_frequency.csv", index=False)
+     seg_choice = rep.drop_duplicates("repeat")[["repeat", "combination", "postprocess"]]
+     seg_choice.to_csv(out / "repeated_segmentation_choice.csv", index=False)
+@@ -317,6 +319,8 @@ def main():
+         "sfs_trace": design["trace"], "spectrum": design["spectrum"], "results": results, "pca_by_p": pca_by_p,
+         "mask_effect": mask_effect, "repeated_summary": rep_summary, "test_images": test_images,
+         "repeated": rep, "selection_freq": selection_freq, "seg_choice": seg_choice,
++        "iter_max": int(seg["n_iter"].max()), "test_low_j_correct": int(((per_image.iloc[te]["jaccard"] < 0.2)
++                                                                           & per_image.iloc[te]["correct_all"]).sum()),
+         "rho_shift": float(rho), "rho_shift_p": float(p_rho), "ref_strategy": ref_res["name"],
+     }
+     reporting.write_tables(out, ctx)

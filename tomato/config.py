@@ -3,7 +3,7 @@
 SEED = 20260913
 
 # Names shown on the report and the presentation, e.g. "Nombre Apellido y Nombre Apellido".
-AUTHORS = "Alexa y Victor"
+AUTHORS = "Alexa Galeano y Victor Sepulveda"
 
 # Image preprocessing: images keep their aspect ratio and are downscaled so the longest
 # side is at most MAX_SIDE pixels (INTER_AREA for images, nearest neighbour for masks).

@@ -241,13 +241,36 @@ def write_macros(out: Path, ctx: dict):
     macros["AuthorLine"] = f"{config.AUTHORS}\\\\" if config.AUTHORS else ""
     macros["NRepPredictions"] = int(ctx["repeated"].query("mask_source == 'kmeans' and strategy == 'Bayes + SFS'")
                                     [["tn", "fp", "fn", "tp"]].to_numpy().sum())
+    # Subset frequencies are counted as sets (selection_freq is already order-independent).
     freq = ctx["selection_freq"]
-    top = freq[freq.strategy == "Bayes + análisis"].sort_values("count", ascending=False).iloc[0]
-    macros["AnTopSubsetCount"] = int(top["count"])
-    macros["SfsOnlyHCount"] = int(freq[(freq.strategy == "Bayes + SFS") & (freq.features == "H")]["count"].sum())
-    macros["SfsWithHCount"] = int(freq[(freq.strategy == "Bayes + SFS") & freq.features.str.split(",").map(
-        lambda fs: "H" in fs)]["count"].sum())
-    macros["SfsDistinctSubsets"] = int((freq.strategy == "Bayes + SFS").sum())
+    canon = lambda feats: ",".join(sorted(feats))
+    for key, name, main in (("An", "Bayes + análisis", ctx["analysis_features"]),
+                            ("Sfs", "Bayes + SFS", ctx["sfs_features"])):
+        g = freq[freq.strategy == name].sort_values("count", ascending=False)
+        macros[f"{key}DistinctSubsets"] = len(g)
+        macros[f"{key}TopSubset"] = tex_features(g.iloc[0]["features"].split(","))
+        macros[f"{key}TopSubsetCount"] = int(g.iloc[0]["count"])
+        macros[f"{key}MainSubsetCount"] = int(g[g.features == canon(main)]["count"].sum())
+    sfs = freq[freq.strategy == "Bayes + SFS"]
+    macros["SfsOnlyHCount"] = int(sfs[sfs.features == "H"]["count"].sum())
+    macros["SfsWithHCount"] = int(sfs[sfs.features.str.split(",").map(lambda fs: "H" in fs)]["count"].sum())
+    # Paired comparison of test accuracy per repeated split (wins / ties / losses of PCA).
+    acc = ctx["repeated"].query("mask_source == 'kmeans'").pivot(index="repeat", columns="strategy", values="accuracy")
+    for key, name in (("An", "Bayes + análisis"), ("Sfs", "Bayes + SFS")):
+        d = acc["PCA + Bayes"] - acc[name]
+        macros[f"PcaVs{key}"] = f"{int((d > 0).sum())}/{int((d == 0).sum())}/{int((d < 0).sum())}"
+    # Theoretical threshold ln(theta) = 0 on validation (diagnostic only).
+    labels = {"Bayes + análisis": "análisis", "Bayes + SFS": "SFS", "PCA + Bayes": "PCA"}
+    zero = [f"{labels[r['name']]} ({r['val_metrics_zero']['fp']} FP, {r['val_metrics_zero']['fn']} FN)"
+            for r in ctx["results"] if r["val_metrics_zero"]["fp"] + r["val_metrics_zero"]["fn"] > 0]
+    ok = [labels[r["name"]] for r in ctx["results"] if r["val_metrics_zero"]["fp"] + r["val_metrics_zero"]["fn"] == 0]
+    macros["ZeroThrErrors"] = ", ".join(zero) if zero else "ninguna estrategia"
+    macros["ZeroThrOk"] = ", ".join(ok) if ok else "ninguna"
+    seg = ctx["seg_summary"]
+    macros["IterMax"] = ctx["iter_max"]
+    macros["HeurBestCount"] = int((seg["dev_heuristic"] >= seg[["dev_min_border", "dev_max_saturation"]].max(axis=1)).sum())
+    macros["PostDevBetterCount"] = int((seg["dev_post_mean"] > seg["dev_mean"]).sum())
+    macros["TestLowJCorrect"] = ctx["test_low_j_correct"]
     lines = [f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in macros.items()]
     (out / "tex" / "values.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
 

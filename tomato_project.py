@@ -13,7 +13,7 @@ Pipeline (every decision uses train/validation only; the test images never feed 
    analysis-based subset, SFS subset, and PCA components. Threshold by Youden on validation.
 6. Final test evaluation with bootstrap CIs, plus declared complementary analyses that do
    not modify the system: a controlled mask ablation and a repeated-split study that
-   re-runs the whole protocol (segmentation choice included) on independent partitions.
+   re-runs the whole protocol (segmentation choice included) on additional partitions.
 
 Usage:  python tomato_project.py [--data data] [--out results] [--quick]
 """
@@ -267,7 +267,7 @@ def main():
     plots.integration_scatter(per_image, ref_res["name"], out)
     test_images = per_image.iloc[te].sort_values("jaccard")
 
-    # 7. Robustness: the whole protocol on repeated independent splits -----------------
+    # 7. Robustness: the whole protocol on repeated additional splits -----------------
     rep_rows = []
     for r in range(n_repeats):
         seed_r = config.SEED + 1 + r
@@ -292,8 +292,10 @@ def main():
     rep_summary.columns = [f"{a}_{b}" for a, b in rep_summary.columns]
     rep_summary = rep_summary.join(grouped[["fp", "fn", "corrected", "introduced"]].sum()).reset_index()
     rep_summary.to_csv(out / "repeated_splits_summary.csv", index=False)
-    selection_freq = (rep[rep.mask_source == "kmeans"].groupby("strategy")["features"].value_counts()
-                      .rename("count").reset_index())
+    # Subsets are counted as sets: "H,G,R" and "G,H,R" are the same selection.
+    km_rep = rep[rep.mask_source == "kmeans"].assign(
+        features=lambda d: d["features"].map(lambda f: ",".join(sorted(f.split(",")))))
+    selection_freq = km_rep.groupby("strategy")["features"].value_counts().rename("count").reset_index()
     selection_freq.to_csv(out / "repeated_selection_frequency.csv", index=False)
     seg_choice = rep.drop_duplicates("repeat")[["repeat", "combination", "postprocess"]]
     seg_choice.to_csv(out / "repeated_segmentation_choice.csv", index=False)
@@ -317,6 +319,8 @@ def main():
         "sfs_trace": design["trace"], "spectrum": design["spectrum"], "results": results, "pca_by_p": pca_by_p,
         "mask_effect": mask_effect, "repeated_summary": rep_summary, "test_images": test_images,
         "repeated": rep, "selection_freq": selection_freq, "seg_choice": seg_choice,
+        "iter_max": int(seg["n_iter"].max()), "test_low_j_correct": int(((per_image.iloc[te]["jaccard"] < 0.2)
+                                                                           & per_image.iloc[te]["correct_all"]).sum()),
         "rho_shift": float(rho), "rho_shift_p": float(p_rho), "ref_strategy": ref_res["name"],
     }
     reporting.write_tables(out, ctx)

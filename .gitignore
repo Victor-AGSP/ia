@@ -6,3 +6,15 @@ build/
 .vscode/
 .DS_Store
 Thumbs.db
+__pycache__/
+*.pyc
+.venv/
+tmp/
+_codex_original/
+*.aux
+*.log
+*.out
+*.toc
+*.rar
+entrega/
+results_check/

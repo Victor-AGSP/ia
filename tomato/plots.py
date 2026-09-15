@@ -308,7 +308,7 @@ def repeated_splits(rep: pd.DataFrame, out: Path):
     handles = [matplotlib.patches.Patch(facecolor="#888888", alpha=shades[s], hatch=hatches[s], edgecolor="black",
                                         label=l) for s, l in sources]
     axes[1].legend(handles=handles, frameon=False, fontsize=8, loc="upper left")
-    fig.suptitle(f"{n_repeats} particiones 60/20/20 independientes (protocolo completo en cada una)", y=1.0)
+    fig.suptitle(f"{n_repeats} particiones 60/20/20 adicionales (protocolo completo en cada una)", y=1.0)
     _save(fig, out / "repeated_splits.png")
 
 

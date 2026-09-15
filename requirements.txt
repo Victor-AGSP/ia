@@ -6,3 +6,4 @@ scikit-learn==1.6.1
 opencv-python==4.13.0.*
 matplotlib==3.10.0
 Pillow>=10
+threadpoolctl==3.6.0

@@ -41,11 +41,13 @@ def extract_features(image: np.ndarray, mask: np.ndarray, linear_hue: bool = Fal
 
     ``linear_hue=True`` reproduces the naive arithmetic mean of H in [0, 360) and exists
     only for the ablation that quantifies why the circular mean is required.
-    An empty mask (segmentation failure) falls back to the whole image and is flagged so
-    the failure stays visible in the feature table instead of producing NaNs.
+    An empty mask is a segmentation failure: it raises instead of silently describing the
+    whole image (background), so the classifier never sees non-fruit descriptors.
     """
     empty = not mask.any()
-    region = np.ones(image.shape[:2], dtype=bool) if empty else mask
+    if empty:
+        raise ValueError("Segmentación fallida: la máscara del fruto está vacía")
+    region = mask
     colours = pixel_colours(image)
     feats = {name: float(colours[name][region].mean()) for name in config.FEATURES if name != "H"}
     hue = colours["H"][region]
